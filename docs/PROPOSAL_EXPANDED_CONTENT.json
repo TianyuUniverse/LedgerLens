@@ -1,0 +1,69 @@
+{
+  "title": "LedgerLens: AI Personal Finance Assistant",
+  "date": "10 October 2026",
+  "members": [
+    {"name": "陈天宇", "english": "Chen Tianyu", "id": "202464870547", "role": "Requirements and savings scenarios"},
+    {"name": "朱俊丞", "english": "Zhu Juncheng", "id": "202464871352", "role": "Backend and data"},
+    {"name": "张瀚文", "english": "Zhang Hanwen", "id": "202464871290", "role": "Interface and evaluation"}
+  ],
+  "slides": [
+    {
+      "title": "LedgerLens: AI Personal Finance Assistant",
+      "speech": "Good morning, everyone. We are Chen Tianyu, Zhu Juncheng and Zhang Hanwen. Our project is LedgerLens, an AI personal finance assistant for students. Today, I will explain the user problem, our proposed solution and how we plan to verify it.",
+      "sources": "Team identity supplied by the user. Project_Kickoff.pdf finance-assistant brief. docs/CONTRIBUTIONS.md."
+    },
+    {
+      "title": "Table of Contents",
+      "speech": "The presentation follows eight sections. We start with user needs and project positioning, then discuss our research plan and product workflow. Finally, we explain the architecture, design contributions, validation and next steps.",
+      "sources": "Section order adapted from the table-of-contents photograph supplied by the user."
+    },
+    {
+      "title": "User Needs & Pain Points",
+      "speech": "Our starting assumption is that students need help interpreting their transaction records. They may struggle to connect totals to individual purchases. Incorrect categories can distort a budget. A savings target can also feel abstract without a monthly plan. We want users to inspect the evidence and understand how changing their spending affects a goal.",
+      "sources": "Project hypotheses based on the course brief and prototype scope. No survey or interview findings."
+    },
+    {
+      "title": "Project Positioning & Users",
+      "speech": "LedgerLens focuses on students who use CNY records and want to manage spending or save for a specific purpose. We define three user stories: import and correct transactions, compare a savings scenario, and inspect answers or alerts through source records. Actual Budget and Firefly III provide related-work references. Our initial scope is a local, single-user prototype with CSV input.",
+      "sources": "docs/REQUIREMENTS_AND_DESIGN.md. Related-work references: https://github.com/actualbudget/actual and https://github.com/firefly-iii/firefly-iii . No source code copied from either repository."
+    },
+    {
+      "title": "User Research: Initial Insights & Plan",
+      "speech": "These needs are hypotheses. We have not conducted interviews or surveys yet. We plan short interviews with student users and task-based walkthroughs. Participants will import a file, trace a spending total and change a savings deadline. We will record confusing steps, incorrect labels and misunderstood assumptions. The findings will help us revise requirements before we evaluate a live model.",
+      "sources": "Research status confirmed by the user. The methods are a proposed research plan, not completed research."
+    },
+    {
+      "title": "Product Workflow",
+      "speech": "The main workflow begins with CSV import. The system validates the batch and skips duplicates. Users then review categories and inspect a spending overview. Next, they enter a target and adjust the deadline or category reductions. The system calculates a scenario and links it to the input records. The screenshot shows our initial prototype with synthetic data. This gives us a concrete workflow to improve and test.",
+      "sources": "ledger/service.py, static/app.js and output/evidence/dashboard-clean.png. All demonstrated records are synthetic."
+    },
+    {
+      "title": "System Architecture",
+      "speech": "The browser connects to a Python backend and a SQLite database. The backend validates input, calculates results and records changes. Our default classification uses rules. An optional language model can propose a category, while code performs all monetary calculations using integer fen. A user must review a proposal before saving it. We check the model's output format and use a labeled rules fallback when the provider fails.",
+      "sources": "app.py and ledger/service.py. Optional runtime model has no database write access. No live-model quality result is available."
+    },
+    {
+      "title": "Core Innovations",
+      "speech": "Our design contributions focus on making the result inspectable. Source links explain which records support a total or answer. Editable scenarios show the effect of changing a deadline or budget assumption. Human review keeps control over category changes. Finally, explicit recovery handles invalid imports and model failures. Together, these choices support a small workflow that the team can explain and verify.",
+      "sources": "Local prototype design choices. These are project design contributions, without a claim of market novelty or superiority."
+    },
+    {
+      "title": "Validation & Risks",
+      "speech": "The initial prototype has twenty-eight passing automated checks. Rules classification matches eighteen of twenty labels in a small synthetic sample. The sample comes from development cases and provides limited evidence. Live-model quality remains unmeasured. We will compare rules and a real model on independently labeled data. We will also review duplicate imports, incomplete records, wrong categories and save failures, checking both the message and the resulting state.",
+      "sources": "output/evidence/verification.json and output/evidence/browser_verification.json, recorded 9 October 2026. Category examples are rules-informed synthetic convenience cases."
+    },
+    {
+      "title": "Plan & Outlook",
+      "speech": "Our next stages are user-need validation, live-model evaluation, integration review and defense preparation. The proposed roles are requirements and savings scenarios for Chen Tianyu, backend and data for Zhu Juncheng, and interface and evaluation for Zhang Hanwen. Codex assisted the initial prototype. The team will review the code and record actual contributions. After verifying the core workflow, we can explore richer import formats. Thank you.",
+      "sources": "docs/CONTRIBUTIONS.md and docs/AI_USAGE.md. Roles are proposed. Stages do not imply instructor-approved dates."
+    }
+  ],
+  "qa": [
+    {"question": "Have you completed user research?", "answer": "We have defined initial hypotheses. Interviews and task walkthroughs are the next step. We will use the findings to revise the requirements."},
+    {"question": "Where does the AI contribute?", "answer": "The optional model proposes transaction categories for human review. Code calculates amounts and ratios. The current baseline uses rules, and we still need to evaluate a live model."},
+    {"question": "What does eighteen out of twenty mean?", "answer": "It is the result of keyword classification on twenty synthetic development examples. It is a small convenience sample and does not establish live-model or real-world accuracy."},
+    {"question": "What happens when a model fails?", "answer": "The service returns a clearly labeled rules fallback. A proposal cannot change the ledger until the user applies it."},
+    {"question": "How did AI assist development?", "answer": "Codex drafted the initial prototype, checks and materials. The team still needs to review the code, make its own changes and record actual contributions."},
+    {"question": "Why build this instead of adopting an existing tool?", "answer": "Existing tools inform our related work. We chose a narrow course workflow that lets us inspect source records, compare savings assumptions and verify the model-review boundary."}
+  ]
+}

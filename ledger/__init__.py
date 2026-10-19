@@ -1,0 +1,1 @@
+"""Traceable personal budgeting domain."""

@@ -1,0 +1,31 @@
+date,description,amount,kind,category
+2026-07-01,Monthly allowance,4000.00,income,Income
+2026-07-02,Dorm rent July,1200.00,expense,Housing
+2026-07-05,Campus canteen July,425.00,expense,Food
+2026-07-10,Grocery July,425.00,expense,Food
+2026-07-12,Metro July,180.00,expense,Transport
+2026-07-15,Taobao clothes July,275.00,expense,Shopping
+2026-07-18,JD.com supplies July,275.00,expense,Shopping
+2026-07-20,Cinema and games July,320.00,expense,Entertainment
+2026-07-25,Phone bill and electric July,200.00,expense,Utilities
+2026-07-26,Move between own accounts July,800.00,transfer,Transfer
+2026-08-01,Monthly allowance,4000.00,income,Income
+2026-08-02,Dorm rent August,1200.00,expense,Housing
+2026-08-05,Campus canteen August,425.00,expense,Food
+2026-08-10,Grocery August,425.00,expense,Food
+2026-08-12,Metro August,180.00,expense,Transport
+2026-08-15,Taobao clothes August,325.00,expense,Shopping
+2026-08-18,JD.com supplies August,325.00,expense,Shopping
+2026-08-20,Cinema and games August,320.00,expense,Entertainment
+2026-08-25,Phone bill and electric August,200.00,expense,Utilities
+2026-08-26,Move between own accounts August,800.00,transfer,Transfer
+2026-09-01,Monthly allowance,4000.00,income,Income
+2026-09-02,Dorm rent September,1200.00,expense,Housing
+2026-09-05,Campus canteen September,425.00,expense,Food
+2026-09-10,Grocery September,425.00,expense,Food
+2026-09-12,Metro September,180.00,expense,Transport
+2026-09-15,Taobao clothes September,375.00,expense,Shopping
+2026-09-18,JD.com supplies September,375.00,expense,Shopping
+2026-09-20,Cinema and games September,320.00,expense,Entertainment
+2026-09-25,Phone bill and electric September,200.00,expense,Utilities
+2026-09-26,Move between own accounts September,800.00,transfer,Transfer

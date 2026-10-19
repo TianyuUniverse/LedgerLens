@@ -1,0 +1,134 @@
+{
+  "title": "LedgerLens: AI Personal Finance Assistant",
+  "date": "10 October 2026",
+  "members": [
+    {
+      "name": "陈天宇",
+      "english": "Chen Tianyu",
+      "id": "202464870547",
+      "role": "Requirements and savings scenarios"
+    },
+    {
+      "name": "朱俊丞",
+      "english": "Zhu Juncheng",
+      "id": "202464871352",
+      "role": "Backend and data"
+    },
+    {
+      "name": "张瀚文",
+      "english": "Zhang Hanwen",
+      "id": "202464871290",
+      "role": "Interface and evaluation"
+    }
+  ],
+  "slides": [
+    {
+      "title": "LedgerLens: AI Personal Finance Assistant",
+      "speech": "Our project, LedgerLens, is an AI money helper for students. It will remember how users group their spending and help them understand their money. I will explain what we want to build and how we plan to test it.",
+      "sources": "Team identity supplied by the user. Project_Kickoff.pdf finance-assistant brief. Expanded AI capabilities are proposed work, not implemented functionality."
+    },
+    {
+      "title": "Table of Contents",
+      "speech": "We have eight parts. First, we look at users and their problems. Then we explain our research plan and how the system will work. Finally, we talk about our new ideas, tests and next steps.",
+      "sources": "Section order adapted from the table-of-contents photograph supplied by the user."
+    },
+    {
+      "title": "User Needs & Pain Points",
+      "speech": "Students may need to fix the same wrong spending group again and again. A payment name alone may not tell us what the money was used for. Wrong groups can also make spending reports less useful. We want the system to ask when it is not sure, learn from the user's answer and use that memory for later payments.",
+      "sources": "Personal examples supplied by the user: university meal payments and roommate electricity/air-conditioning payments. These are not measured comparisons of WeChat, Alipay or other products. User research remains planned."
+    },
+    {
+      "title": "Project Positioning & Users",
+      "speech": "We plan four features. First, the system will remember how each user groups payments. Second, users can ask questions about their spending and change which payments to include. Third, it will help make savings plans that follow the user's limits. Later, we will add monthly spending reports. We also look at tools such as Actual Budget and Firefly III.",
+      "sources": "Proposed product scope supplied by the user. Related-work pointers: https://github.com/actualbudget/actual and https://github.com/firefly-iii/firefly-iii . No claim that these products lack the proposed capabilities."
+    },
+    {
+      "title": "User Research: Initial Insights & Plan",
+      "speech": "We have not talked to student users yet. We will ask them to try the system and check how it groups their payments. We will test new payments, repeated payments and cases with different uses. We will count how often users need to fix a wrong group. We will also check whether the answers and savings plans are easy to understand.",
+      "sources": "Proposed research plan and evidence boundary supplied by the user. No completed user-research findings."
+    },
+    {
+      "title": "Product Workflow",
+      "speech": "In the planned system, users first add their records. The system looks for a useful memory. If it is not sure, it asks the user to choose a spending group. It saves the answer. With the user's permission, it can use that memory for similar payments later. Users can change or delete memories. The picture shows our basic version. It does not have this memory feature yet.",
+      "sources": "Proposed personal-memory workflow supplied by the user. Existing baseline screenshot: output/evidence/dashboard-clean.png, synthetic records. Persistent classification memory, multi-turn tool use and constrained plan generation are not implemented."
+    },
+    {
+      "title": "System Architecture",
+      "speech": "Here is our system design. A web page connects to a Python server and a database. The database will store records and user memories. Chat history will keep the current dates and limits. AI will read past examples and choose tools. Code will check the money and the rules. Users will approve new memories and saved plans. If AI fails, the basic mode stays available.",
+      "sources": "Proposed architecture follows official OpenAI Function calling documentation: https://developers.openai.com/api/docs/guides/function-calling , accessed 10 October 2026. Local design choices: approved tools, argument checks, evidence validation, integer-fen calculations and confirmation. This loop is not implemented in the current baseline."
+    },
+    {
+      "title": "Core Innovations",
+      "speech": "Our main new idea is to remember each user's choices. After the user checks a spending group, the system can use that choice for later payments with the same meaning. It should ask again if the meaning is different. This may reduce repeated work. We also plan answers that show the source records and savings plans that follow the user's limits.",
+      "sources": "Proposed application design contributions supplied by the user. No new-model, new-algorithm or proven market-superiority claim."
+    },
+    {
+      "title": "Validation & Risks",
+      "speech": "Our basic version passed twenty-eight tests. Our rules got eighteen of twenty made-up examples right. These are not results for AI memory. We will use new cases to check correct groups, wrong groups and repeated questions. We will also check money totals and user limits. We have not tested a real AI model yet.",
+      "sources": "Existing evidence: output/evidence/verification.json, recorded 9 October 2026. 18/20 is a rules-informed synthetic convenience sample. Evaluation criteria and cases are planned."
+    },
+    {
+      "title": "Plan & Outlook",
+      "speech": "We will first build the memory feature. Then we will add chat tools and savings plans. Next, we will connect the pages and test the full process. Chen Tianyu will focus on user needs and savings plans. Zhu Juncheng will focus on the server and data. Zhang Hanwen will focus on pages and tests. These are planned roles. Codex helped build the first version. We will check it and record our own work. Thank you.",
+      "sources": "docs/CONTRIBUTIONS.md and docs/AI_USAGE.md. Expanded work packages are proposed. No unconfirmed deadlines or completed-contribution claims."
+    }
+  ],
+  "qa": [
+    {
+      "question": "What is your main new idea?",
+      "answer": "The system will remember a user's checked spending groups. It will use these memories for later payments with the same meaning. If it is not sure, it will ask again. We still need to build and test this feature."
+    },
+    {
+      "question": "How does memory work?",
+      "answer": "We plan to save the user's answer in a database. For a new payment, the system will look for a useful past answer. AI will use it to help choose the right group."
+    },
+    {
+      "question": "Can you give an example of a wrong group?",
+      "answer": "A payment to our school may be for meals. After the user tells us this, we can remember it as Food. But another school payment may be for classes. We must check the notes and ask again when we are not sure."
+    },
+    {
+      "question": "What about money sent to a roommate?",
+      "answer": "It may pay for electricity or air conditioning. We will ask what it pays for and put it in Utilities if the user says yes. Moving money between the user's own accounts is different. It should not count as spending."
+    },
+    {
+      "question": "Can users change or delete a memory?",
+      "answer": "Yes. We plan to show which memory was used. Users can change it, turn it off or delete it. Changing a memory will not change old records without asking."
+    },
+    {
+      "question": "What will AI and code do?",
+      "answer": "AI will understand questions, choose tools and explain the results. Code will read records, add up the money and check the user's limits. Users approve memory rules and saved plans."
+    },
+    {
+      "question": "Have you built the AI features?",
+      "answer": "No. We have a basic version for adding records, viewing totals and making manual plans. The memory and new AI features are still plans."
+    },
+    {
+      "question": "Can it leave out a large purchase?",
+      "answer": "If a user asks to leave out a computer purchase, we will find the right record and calculate again. The original record stays in the system. If more than one record matches, we will ask the user to choose."
+    },
+    {
+      "question": "Can you give a savings-plan example?",
+      "answer": "A user may want to save six thousand yuan in six months, keep rent unchanged and leave at least two hundred yuan a month for entertainment. AI will suggest choices. Code will check them. The user can change the limits and ask for a new plan."
+    },
+    {
+      "question": "What if the user cannot reach the goal?",
+      "answer": "We will show how much is still missing. We can suggest more time or ask which limit the user wants to change. We will not change a fixed limit without asking."
+    },
+    {
+      "question": "Can AI explain why someone spent money?",
+      "answer": "Records show what was paid and when. They do not tell us why a person wanted it. If we need that information, we will ask the user."
+    },
+    {
+      "question": "How will you test this?",
+      "answer": "We will use new cases that we did not use while building it. We will count correct groups, wrong groups and repeat questions. We will also check the totals and user limits. The AI features have not been tested yet."
+    },
+    {
+      "question": "What does eighteen out of twenty mean?",
+      "answer": "Our rules got eighteen of twenty made-up examples right. This is a small check of the basic version. It does not show how well AI memory works."
+    },
+    {
+      "question": "How did Codex help?",
+      "answer": "Codex helped write the first version and the tests. We still need to read the code, build the new features and record our own work."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.env
+data/*.sqlite*
+data/provider.json
+tmp/
+.codex-finalizer/
+output/*.zip
+output/
+node_modules/
+*.log

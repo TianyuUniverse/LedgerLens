@@ -1,0 +1,4 @@
+date,description,amount,kind,category,counterparty,note,source_kind,source_category
+2026-08-02,校园账户充值,900,expense,Education,华南理工大学,伙食费,expense,教育
+2026-08-05,微信转账,80,transfer,Transfer,舍友小林,电费和空调费,微信转账,转账
+2026-08-06,本人账户转账,500,transfer,Transfer,本人储蓄账户,账户调拨,transfer,转账
