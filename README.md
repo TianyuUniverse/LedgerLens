@@ -29,6 +29,8 @@ Open http://127.0.0.1:8765, or double-click `Start_LedgerLens.bat`. Click **加�
 
 ![简约目标冒险](docs/images/adventure-minimal.png)
 
+![成长图鉴与 AI 四格日记](docs/images/reports-desktop.png)
+
 ## GitHub 协作
 
 公开仓库：https://github.com/TianyuUniverse/LedgerLens 。真实分支、PR、CI 和贡献填写方式见 [CONTRIBUTING.md](CONTRIBUTING.md)。首次提交导入已有原型，后续提交记录实际改动；没有模拟三位成员的提交或审核。私有配置、账本、临时文件和历史提交材料不上传。

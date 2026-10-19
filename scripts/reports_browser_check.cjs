@@ -33,11 +33,13 @@ async function main(){
     await page.locator('#report-kind').selectOption('week');await page.locator('#report-range').filter({hasText:'至'}).waitFor();
     await page.locator('#report-kind').selectOption('month');await page.locator('#report-current').click();
     await page.locator('#radar-unlocked').filter({hasText:'6 / 6'}).waitFor();
-    const image=await page.locator('.comic-art').first().evaluate(async el=>{const url=getComputedStyle(el).backgroundImage.slice(5,-2);const i=new Image();i.src=url;await i.decode();return i.naturalWidth;});check(image>0,'Comic illustration missing');
+    await page.waitForFunction(()=>!reportBusy&&periodReport.kind==='month'&&periodReport.record_count===2);
+    const image=await page.locator('.comic-art').first().evaluate(async el=>{const style=getComputedStyle(el).backgroundImage;const match=style.match(/^url\(["']?(.*?)["']?\)$/);if(!match)throw Error('Comic background missing: '+style);const i=new Image();i.src=match[1];await i.decode();return i.naturalWidth;});check(image>0,'Comic illustration missing');
     await page.locator('#notice .notice-dismiss').click().catch(()=>{});
     await page.locator('#adventure-toast').waitFor({state:'hidden'});
     await page.locator('#insights').screenshot({path:path.join(out,'reports-desktop.png')});
     await page.locator('#adventure').screenshot({path:path.join(out,'adventure-minimal.png')});
+    await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
     await page.screenshot({path:path.join(out,'minimal-home.png')});
     const download=page.waitForEvent('download');await page.locator('[data-download-chart=report-trend]').click();check((await download).suggestedFilename().endsWith('.svg'),'Chart export failed');
     await page.setViewportSize({width:390,height:844});await page.locator('#insights').scrollIntoViewIfNeeded();
