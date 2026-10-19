@@ -1,0 +1,38 @@
+name: LedgerLens checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.13']
+    runs-on: ${{ matrix.os }}
+    env:
+      FINANCE_AI_DISABLE: '1'
+      PYTHONUTF8: '1'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Compile Python
+        run: python -m compileall -q ledger app.py tests
+      - name: Domain, API and AI boundary tests
+        run: python -m unittest discover -v
+      - name: Shared source credential scan
+        run: python scripts/check_shared_files.py
+  javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check browser scripts
+        run: |
+          node --check static/app.js
+          node --check static/workflows.js
+          node --check static/adventure.js
+          node --check static/reports.js
+          node --check static/quick-entry.js

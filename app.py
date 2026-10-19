@@ -70,6 +70,13 @@ def create_server(db_path, port=8765):
             if path in files:
                 file, content_type = files[path]
                 return self.reply(200, (ROOT/file).read_bytes(), content_type)
+            extra={'/reports.js':('static/reports.js','text/javascript; charset=utf-8'),
+                   '/minimal.css':('static/minimal.css','text/css; charset=utf-8'),
+                   '/quick-entry.js':('static/quick-entry.js','text/javascript; charset=utf-8'),
+                   '/images/comic-flat.png':('static/images/comic-flat.png','image/png')}
+            if path in extra:
+                file,content_type=extra[path]
+                return self.reply(200,(ROOT/file).read_bytes(),content_type)
             return self.reply(404, {'error':'Route not found.'})
 
         def mutate(self):
@@ -114,6 +121,12 @@ def create_server(db_path, port=8765):
                     result=ledger.tools.save_plan(raw)
                 elif path == '/api/monthly-review':
                     result=ledger.tools.monthly_review(raw)
+                elif path == '/api/reports/generate':
+                    result=ledger.reports.generate(raw)
+                elif path == '/api/entries/draft':
+                    result=ledger.quick_entry.draft(raw)
+                elif path == '/api/entries/save':
+                    result=ledger.quick_entry.save(raw)
                 elif path == '/api/adventure/goals':
                     result=ledger.adventure.create_goal(raw)
                 elif path == '/api/adventure/entries':

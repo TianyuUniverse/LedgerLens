@@ -18,6 +18,8 @@ from .provider import classify_context, enabled
 from .assistant import Assistant
 from .localization import CSV_HEADERS, CATEGORY_LABELS, label
 from .adventure import Adventure
+from .reports import Reports
+from .entry import QuickEntry
 
 class Ledger:
     def __init__(self, path, clock=None):
@@ -59,6 +61,8 @@ class Ledger:
         self.tools = FinanceTools(self)
         self.assistant = Assistant(self)
         self.adventure = Adventure(self,clock)
+        self.reports = Reports(self)
+        self.quick_entry = QuickEntry(self)
 
     @contextmanager
     def connection(self):
@@ -77,7 +81,7 @@ class Ledger:
         con.execute('INSERT INTO audit(at,action,details) VALUES(?,?,?)', (datetime.now(timezone.utc).isoformat(), action, json.dumps(details, ensure_ascii=False)))
         self.adventure.track(con,action,details)
 
-    def import_csv(self, content):
+    def import_csv(self, content, *, confirmed=False):
         if not isinstance(content, str) or len(content.encode('utf-8')) > 2000000:
             raise DomainError('CSV must be UTF-8 and at most 2 MB.')
         reader = csv.DictReader(io.StringIO(content.lstrip('\ufeff')))
@@ -110,7 +114,9 @@ class Ledger:
                     duplicates += 1
                     continue
                 try:
-                    decision = self.memory.decision(record, con)
+                    decision = ({'kind':record['kind'],'category':record['category'],'category_source':'human',
+                        'memory_id':None,'memory_version':None,'review_status':'confirmed','decision_reason':'用户核对快速记账后确认保存。'}
+                        if confirmed else self.memory.decision(record, con))
                     revised = validate_record({**record,**decision,'amount':str(Decimal(record['amount_fen'])/100)})
                     values = {**record,**revised,**decision,'import_fingerprint':original_identity,'created_at':datetime.now(timezone.utc).isoformat()}
                     cur = con.execute('''INSERT INTO transactions(date,description,amount_fen,kind,category,fingerprint,category_source,created_at,

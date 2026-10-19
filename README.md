@@ -6,13 +6,32 @@ The software interface defaults to Simplified Chinese, including categories, val
 
 ## Run
 
-Requires Python 3.10+ and a modern browser. The application needs no third-party packages.
+Requires Python 3.11+ and a modern browser. The application needs no third-party packages.
 
 ```powershell
 python app.py
 ```
 
 Open http://127.0.0.1:8765, or double-click `Start_LedgerLens.bat`. Click **加载示例账单** for 30 synthetic records. Imports append and skip duplicates without replacing existing records. Data persists in `data/ledger.sqlite`. For an independent workspace run `python app.py --port 8768 --db data/new-demo.sqlite`.
+
+## 成长图鉴、AI 向导与快速记账
+
+本轮界面参考用户提供的记账软件截图，采用黄色强调色、白色卡片、细线图标和手机底部导航，保留 LedgerLens 的独立名称与功能。
+
+- **记一笔**：分类网格与表单；一句话生成可编辑草稿，核对后保存。金额和日期由程序提取；可选 AI 理解用途；重复提交跳过。手动确认的分类优先于自动记忆。
+- **成长图鉴**：周报／月报、每日收支折线图、分类环形图、目标累计储蓄轨迹、预算进度和六维雷达图。点击数据或来源标签可核对账单，图表可导出为 SVG。
+- **AI 小狐向导**：理解本期汇总指标，给出带事实引用的建议、可前往现有功能的行动卡，以及连续四格分镜和对白。向导也出现在游戏任务面板。
+- **明确的数据边界**：缺少记录的维度暂不评分；当前周期按相同已过天数比较；转账不计收支。六维图是本项目定义的习惯标尺，不是个人信用评分。目标来自用户记录，非银行核验。
+
+打开软件和更改周期会自动整理本地报告。AI 报告需要勾选同意并点击生成，只发送汇总事实与指标，不发送逐笔商户、交易对方和备注。同一份数据的 AI 报告持久缓存，重新打开可直接查看；账本变动后需重新生成。应用关闭时不会在后台定时调用模型。
+
+四格插画是项目预制的简约卡通素材；**本期分镜与对白由运行时 AI 生成**，并非每次重新绘制图片。服务失败或引用无效时清楚显示本地模板。详见 [报告与 AI 设计](docs/AI_REPORTS_DESIGN.md)。
+
+![简约目标冒险](docs/images/adventure-minimal.png)
+
+## GitHub 协作
+
+公开仓库：https://github.com/TianyuUniverse/LedgerLens 。真实分支、PR、CI 和贡献填写方式见 [CONTRIBUTING.md](CONTRIBUTING.md)。首次提交导入已有原型，后续提交记录实际改动；没有模拟三位成员的提交或审核。私有配置、账本、临时文件和历史提交材料不上传。
 
 ## Goal adventure / 目标冒险
 
@@ -68,7 +87,7 @@ The tool allowlist is `query_transactions`, `compare_periods`, `generate_savings
 python scripts/verify.py
 ```
 
-This runs **107 domain/HTTP tests** on temporary databases without external model calls or changes to your ledger. The record is `output/evidence/verification.json`; the original 28-test evidence is preserved under `output/evidence/baseline-20261009/`. The legacy rules benchmark remains 18/20 on an authored, rules-informed synthetic convenience sample; baseline grounded Q&A remains 9/9. These figures are not representative accuracy.
+This runs **129 domain/HTTP tests** on temporary databases without external model calls or changes to your ledger. The record is `output/evidence/verification.json`; the original 28-test evidence is preserved under `output/evidence/baseline-20261009/`. The legacy rules benchmark remains 18/20 on an authored, rules-informed synthetic convenience sample; baseline grounded Q&A remains 9/9. These figures are not representative accuracy.
 
 Optional Edge/Playwright browser replays:
 
