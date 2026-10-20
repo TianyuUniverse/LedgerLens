@@ -166,13 +166,17 @@ class SetupChat:
             if not goal:raise DomainError('请先选择进行中的目标。')
             context={'goal_id':goal['id'],'goal_title':goal['title']}
         if mode=='purpose':
-            record=next((r for r in self.ledger.transactions() if r['id']==raw.get('record_id')),None)
-            if not record:raise DomainError('请先选择要确认用途的账单。')
-            context={'record_id':record['id'],'expected_revision':record['revision'],'record':{k:record[k] for k in ('description','counterparty','note','source_kind','source_category')}}
+            memory=None
             if raw.get('memory_id'):
                 memory=next((m for m in self.ledger.memory.list() if m['id']==raw['memory_id']),None)
                 if not memory:raise DomainError('这条记忆不存在。')
-                if memory['source_id']!=record['id']:raise DomainError('请从这条记忆的来源账单开启修改。')
+                if memory['source_id']!=raw.get('record_id'):raise DomainError('请从这条记忆的来源账单开启修改。')
+            record=next((r for r in self.ledger.transactions() if r['id']==raw.get('record_id')),None)
+            # A saved rule retains its approved example after the source bill is deleted.
+            if record is None and memory:record=memory['example']
+            if not record:raise DomainError('请先选择要确认用途的账单。')
+            context={'record_id':record['id'],'expected_revision':record['revision'],'record':{k:record[k] for k in ('description','counterparty','note','source_kind','source_category')}}
+            if memory:
                 context.update(memory_id=memory['id'],memory_version=memory['version'])
                 return {**{k:copy.deepcopy(memory[k]) for k in ('kind','category','purpose','auto_apply','match')},'remember':True},context
             return {'kind':record['kind'],'category':record['category'],'remember':False,'auto_apply':False,'match':{k:record[k] for k in ('counterparty','description','note') if record[k]}},context

@@ -113,6 +113,8 @@ def create_server(db_path, port=8765):
                     result = ledger.memory.update(int(path.rsplit('/',1)[1]),raw)
                 elif self.command != 'POST':
                     return self.reply(404, {'error':'Route not found.'})
+                elif path == '/api/transactions/delete':
+                    result = ledger.delete_transaction(raw)
                 elif path == '/api/import':
                     result = ledger.import_csv(raw.get('csv'))
                 elif path == '/api/import-file/preview':

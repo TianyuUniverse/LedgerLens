@@ -159,6 +159,29 @@ class Ledger:
         with self.connection() as con:
             return [dict(r) for r in con.execute('SELECT * FROM transactions ORDER BY date DESC,id DESC')]
 
+    def delete_transaction(self, raw):
+        if (not isinstance(raw, dict) or set(raw) != {'id', 'expected_revision'}
+                or type(raw['id']) is not int or raw['id'] <= 0
+                or type(raw['expected_revision']) is not int or raw['expected_revision'] <= 0):
+            raise DomainError('请选择要删除的账单，并使用最新的账单详情。')
+        # Keep a concurrent purpose chat from recreating an invalidated draft.
+        with self.setup_chat.lock, self.connection() as con:
+            con.execute('BEGIN IMMEDIATE')
+            old = con.execute('SELECT * FROM transactions WHERE id=?', (raw['id'],)).fetchone()
+            if not old:
+                raise DomainError('这笔账单已不存在，请刷新账单列表。')
+            if old['revision'] != raw['expected_revision']:
+                raise DomainError('这笔账单已修改，请重新打开详情，核对后再删除。')
+            con.execute('DELETE FROM transactions WHERE id=?', (old['id'],))
+            con.execute('DELETE FROM period_reports')
+            con.execute("DELETE FROM settings WHERE key='generated_plan'")
+            for draft in con.execute("SELECT id,context FROM setup_chats WHERE mode='purpose'").fetchall():
+                context = json.loads(draft['context'])
+                if context.get('record_id') == old['id'] and not context.get('memory_id'):
+                    con.execute('DELETE FROM setup_chats WHERE id=?', (draft['id'],))
+            self.audit(con, 'transaction_delete', {'id':old['id'], 'before':dict(old)})
+        return {'id':raw['id'], 'deleted':True}
+
     def edit(self, record_id, patch):
         if not isinstance(patch, dict) or not patch or set(patch) - {'date', 'description', 'amount', 'kind', 'category','counterparty','note'}:
             raise DomainError('Supply supported editable fields.')

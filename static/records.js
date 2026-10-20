@@ -1,5 +1,6 @@
 'use strict';
 let recordPage=1,recordFilterKey='',recordDetailsId=null;
+let recordDeleteTarget=null,recordDeleteBusy=false;
 const recordPageSize=50;
 function recordTextSource(r){
   if(r.description_origin==='user')return {label:'你填写的文字',explanation:'这段商品或用途文字由你填写或修改。'};
@@ -47,5 +48,34 @@ $('record-next').addEventListener('click',()=>{recordPage++;renderRows();$('reco
 $('rows').addEventListener('click',e=>{const b=e.target.closest('[data-record-details]');if(b){recordDetailsId=Number(b.dataset.recordDetails);$('record-detail-advanced').open=false;renderRecordDetails();$('record-detail-dialog').showModal();}});
 $('record-detail-close').addEventListener('click',()=>$('record-detail-dialog').close());
 $('record-detail-purpose').addEventListener('click',()=>{const record=state.transactions.find(r=>r.id===recordDetailsId);$('record-detail-dialog').close();openPurpose(record);});
+$('record-detail-delete').addEventListener('click',()=>{
+  const r=state.transactions.find(r=>r.id===recordDetailsId);if(!r)return;
+  recordDeleteTarget={id:r.id,expected_revision:r.revision};
+  $('record-delete-bill').innerHTML=`<strong>${esc(r.counterparty||r.description)}</strong><span>${esc(r.date)} · ${esc(l(r.kind))}</span><b>${cash(r.amount_fen)}</b>`;
+  $('record-delete-description').textContent='删除后，收支统计会重新计算。'+(r.source_platform==='wechat'||['csv','wechat'].includes(r.ingestion_origin)?'再次导入原文件，可以重新加入这笔账单。':'需要恢复时，可以重新记一笔。');
+  $('record-delete-memory-note').hidden=!state.memories.some(m=>m.source_id===r.id);
+  $('record-delete-error').textContent='';$('record-detail-dialog').close();$('record-delete-dialog').showModal();$('record-delete-cancel').focus();
+});
+function cancelRecordDelete(){
+  if(recordDeleteBusy)return;
+  $('record-delete-dialog').close();
+  if(state.transactions.some(r=>r.id===recordDeleteTarget?.id)){recordDetailsId=recordDeleteTarget.id;renderRecordDetails();$('record-detail-dialog').showModal();$('record-detail-delete').focus();}
+  recordDeleteTarget=null;
+}
+$('record-delete-cancel').addEventListener('click',cancelRecordDelete);
+$('record-delete-dialog').addEventListener('cancel',e=>{e.preventDefault();cancelRecordDelete();});
+$('record-delete-confirm').addEventListener('click',async()=>{
+  if(recordDeleteBusy||!recordDeleteTarget)return;
+  recordDeleteBusy=true;$('record-delete-confirm').disabled=true;$('record-delete-cancel').disabled=true;$('record-delete-error').textContent='';
+  const target=recordDeleteTarget;let deleted=false;
+  try{
+    await api('/api/transactions/delete',target);deleted=true;
+    for(const key of setupDrafts.keys()){const context=JSON.parse(key.slice(key.indexOf('{')));if(key.startsWith('purpose')&&context.record_id===target.id&&!context.memory_id)setupDrafts.delete(key);}
+    smartPreview=null;$('plan-options').replaceChildren();$('review-result').replaceChildren();
+    $('record-delete-dialog').close();recordDeleteTarget=null;recordDetailsId=null;
+    await refresh();notice('这笔账单已删除，收支统计已更新。');
+  }catch(error){if(deleted)notice('账单已删除，请刷新页面查看最新统计。',true);else $('record-delete-error').textContent=errorMessage(error);}
+  finally{recordDeleteBusy=false;$('record-delete-confirm').disabled=false;$('record-delete-cancel').disabled=false;}
+});
 $('record-original-fields').addEventListener('change',e=>run(async()=>{const el=e.target.closest('[data-edit]');if(el){await api('/api/transactions/'+el.dataset.edit,{category:el.value},'PATCH');await refresh();notice('分类已更新。');}}));
 $('record-original-fields').addEventListener('click',e=>run(async()=>{const b=e.target.closest('[data-review]');if(!b)return;proposal=await api('/api/suggest',{id:Number(b.dataset.review)});$('proposal-text').textContent=`建议：${l(proposal.kind||state.transactions.find(r=>r.id===proposal.record_id).kind)} / ${l(proposal.category)}。${proposal.reason} ${proposal.notice||''}`;$('record-detail-dialog').close();$('review-dialog').showModal();}));

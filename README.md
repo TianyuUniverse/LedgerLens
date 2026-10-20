@@ -53,6 +53,8 @@ Open http://127.0.0.1:8765, or double-click `Start_LedgerLens.bat`. Click **加�
 
 ## 账单明细与文字来源
 
+删除账单：**账单明细 → 详情 → 删除这笔账单 → 确认删除**。取消与 Esc 不删除；统计随账本更新。确认期间账单已修改时会阻止删除，分类记忆和储蓄目标保留。
+
 账单主列表显示日期、商家与商品、金额、分类和操作，分别标注微信／CSV 原文、用户填写或 AI 整理后确认的内容。原始标签、记忆版本等移入详情。历史记录缺少来源时不会猜测。示例加载入口收进“其他”，不默认加载。见 [内容来源与账单页说明](docs/RECORDS_UI.md)。
 
 ![简化后的账单明细](docs/images/records-simple-desktop.png)
@@ -101,7 +103,7 @@ The tool allowlist is `query_transactions`, `compare_periods`, `generate_savings
 python scripts/verify.py
 ```
 
-This runs **175 domain/HTTP tests** on temporary databases without external model calls or changes to your ledger. The record is `output/evidence/verification.json`; the original 28-test evidence is preserved under `output/evidence/baseline-20261009/`. The legacy rules benchmark remains 18/20 on an authored, rules-informed synthetic convenience sample; baseline grounded Q&A remains 9/9. These figures are not representative accuracy.
+This runs **186 domain/HTTP tests** on temporary databases without external model calls or changes to your ledger. The record is `output/evidence/verification.json`; the original 28-test evidence is preserved under `output/evidence/baseline-20261009/`. The legacy rules benchmark remains 18/20 on an authored, rules-informed synthetic convenience sample; baseline grounded Q&A remains 9/9. These figures are not representative accuracy.
 
 Optional Edge/Playwright browser replays:
 
