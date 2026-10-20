@@ -17,7 +17,7 @@ LABELS = {**CATEGORY_LABELS, 'expense':'支出','income':'收入','transfer':'�
           'local clarification':'需要补充信息','local fallback · deterministic':'本地工具回退（规则模式）',
           'model tool calling · validated calculations':'AI 工具调用 · 金额已经程序校验',
           'edit':'修改账单','budget':'设置预算','plan':'保存自定义测算','confirm_purpose':'确认消费用途',
-          'memory_update':'修改分类记忆','memory_delete':'删除分类记忆','generated_plan_save':'保存储蓄方案',
+          'memory_update':'修改分类记忆','memory_delete':'删除分类记忆','transaction_delete':'删除账单','generated_plan_save':'保存储蓄方案',
           'id':'编号','date':'日期','description':'交易描述','amount':'金额','amount_fen':'金额（分）','category':'消费分类',
           'counterparty':'交易对方','note':'备注','source_kind':'原始类型','source_category':'原始分类',
           'inserted_ids':'新增记录编号','duplicates':'跳过重复项','before':'修改前','after':'修改后','inputs':'输入条件',

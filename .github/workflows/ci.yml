@@ -42,3 +42,4 @@ jobs:
           node --check static/goals.js
           node --check static/memories.js
           node --check static/imports.js
+          node --check static/records.js

@@ -75,6 +75,8 @@ def create_server(db_path, port=8765):
                    '/memories.js':('static/memories.js','text/javascript; charset=utf-8'),
                    '/workspace.css':('static/workspace.css','text/css; charset=utf-8'),
                    '/imports.js':('static/imports.js','text/javascript; charset=utf-8'),
+                   '/records.js':('static/records.js','text/javascript; charset=utf-8'),
+                   '/records.css':('static/records.css','text/css; charset=utf-8'),
                    '/pages.js':('static/pages.js','text/javascript; charset=utf-8'),
                    '/comfort.css':('static/comfort.css','text/css; charset=utf-8'),
                    '/setup-chat.js':('static/setup-chat.js','text/javascript; charset=utf-8'),
@@ -111,6 +113,8 @@ def create_server(db_path, port=8765):
                     result = ledger.memory.update(int(path.rsplit('/',1)[1]),raw)
                 elif self.command != 'POST':
                     return self.reply(404, {'error':'Route not found.'})
+                elif path == '/api/transactions/delete':
+                    result = ledger.delete_transaction(raw)
                 elif path == '/api/import':
                     result = ledger.import_csv(raw.get('csv'))
                 elif path == '/api/import-file/preview':
@@ -118,12 +122,12 @@ def create_server(db_path, port=8765):
                 elif path == '/api/import-file/confirm':
                     result = ledger.wechat_import.commit(raw)
                 elif path == '/api/demo':
-                    result = ledger.import_csv((ROOT/'samples/transactions.csv').read_text(encoding='utf-8'))
+                    result = ledger.import_csv((ROOT/'samples/transactions.csv').read_text(encoding='utf-8'),origin='sample')
                 elif path == '/api/memory-demo':
                     phase=raw.get('phase')
                     if phase not in ('seed','followup'):
                         raise DomainError('Choose seed or followup synthetic sample.')
-                    result=ledger.import_csv((ROOT/f'samples/memory_{phase}.csv').read_text(encoding='utf-8'))
+                    result=ledger.import_csv((ROOT/f'samples/memory_{phase}.csv').read_text(encoding='utf-8'),origin='sample')
                 elif path == '/api/confirm-purpose':
                     result=ledger.memory.confirm(raw.get('id'),{k:v for k,v in raw.items() if k!='id'})
                 elif path == '/api/delete-memory':

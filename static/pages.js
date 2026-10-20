@@ -1,7 +1,7 @@
 'use strict';
 const pageDefinitions={
   overview:{name:'首页',title:'记好每一笔，靠近小目标。',description:'先看清收支，再安排今天的一小步。',icon:'coin'},
-  records:{name:'账单明细',title:'每一笔，都清清楚楚。',description:'导入、审核和查找账单，保留每个数字的来源。',icon:'book'},
+  records:{name:'账单明细',title:'账单明细',description:'导入内容保留原文，AI 整理的用途会单独标明。',icon:'book'},
   insights:{name:'统计分析',title:'读懂自己的财务节奏。',description:'周月图表、六维习惯、AI 建议与四格日记。',icon:'chart'},
   goals:{name:'储蓄目标',title:'让每个小愿望，慢慢实现。',description:'和 AI 聊聊目标，再把行动积累成看得见的进步。',icon:'star'},
   memories:{name:'分类记忆',title:'确认一次，记住实际用途。',description:'查看和管理你确认过的分类经验。',icon:'book'},

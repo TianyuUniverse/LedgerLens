@@ -44,7 +44,10 @@ class Ledger:
               enabled INTEGER NOT NULL, auto_apply INTEGER NOT NULL, version INTEGER NOT NULL,
               created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
             CREATE TABLE IF NOT EXISTS conversations(id TEXT PRIMARY KEY, state_json TEXT NOT NULL, updated_at TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS transaction_sequence(singleton INTEGER PRIMARY KEY CHECK(singleton=1),last_id INTEGER NOT NULL);
             ''')
+            con.execute('INSERT OR IGNORE INTO transaction_sequence VALUES(1,0)')
+            con.execute('UPDATE transaction_sequence SET last_id=MAX(last_id,(SELECT COALESCE(MAX(id),0) FROM transactions)) WHERE singleton=1')
             columns = {r['name'] for r in con.execute('PRAGMA table_info(transactions)')}
             additions = {'counterparty':"TEXT NOT NULL DEFAULT ''", 'note':"TEXT NOT NULL DEFAULT ''",
                          'source_kind':"TEXT NOT NULL DEFAULT ''", 'source_category':"TEXT NOT NULL DEFAULT ''",
@@ -53,6 +56,7 @@ class Ledger:
                          'revision':'INTEGER NOT NULL DEFAULT 1',
                          'source_platform':"TEXT NOT NULL DEFAULT ''",'external_id':"TEXT NOT NULL DEFAULT ''",
                          'source_status':"TEXT NOT NULL DEFAULT ''",'occurred_at':"TEXT NOT NULL DEFAULT ''"}
+            additions.update(ingestion_origin="TEXT NOT NULL DEFAULT 'legacy'",description_origin="TEXT NOT NULL DEFAULT 'unknown'")
             for name, declaration in additions.items():
                 if name not in columns:
                     con.execute(f'ALTER TABLE transactions ADD COLUMN {name} {declaration}')
@@ -60,6 +64,8 @@ class Ledger:
             con.execute("UPDATE transactions SET source_category=category WHERE source_category=''")
             con.execute('UPDATE transactions SET import_fingerprint=fingerprint WHERE import_fingerprint IS NULL')
             con.execute('CREATE UNIQUE INDEX IF NOT EXISTS transaction_import_identity ON transactions(import_fingerprint)')
+            con.execute("UPDATE transactions SET ingestion_origin='wechat',description_origin='file' WHERE ingestion_origin='legacy' AND source_platform='wechat'")
+            con.execute("UPDATE transactions SET ingestion_origin='entry' WHERE ingestion_origin='legacy' AND decision_reason='用户核对快速记账后确认保存。'")
             if 'review_status' not in columns:
                 con.execute("UPDATE transactions SET review_status='needs_review' WHERE category_source!='human' AND (category='Other' OR kind='transfer')")
         self.memory = MemoryStore(self)
@@ -89,7 +95,9 @@ class Ledger:
         con.execute('INSERT INTO audit(at,action,details) VALUES(?,?,?)', (datetime.now(timezone.utc).isoformat(), action, json.dumps(details, ensure_ascii=False)))
         self.adventure.track(con,action,details)
 
-    def import_csv(self, content, *, confirmed=False):
+    def import_csv(self, content, *, confirmed=False, origin=None, description_origin=None):
+        origin=origin or ('entry' if confirmed else 'csv')
+        if origin not in ('csv','entry','sample') or description_origin not in (None,'user','local','ai','unknown'):raise DomainError('账单内容来源无效。')
         if not isinstance(content, str) or len(content.encode('utf-8')) > 2000000:
             raise DomainError('CSV must be UTF-8 and at most 2 MB.')
         reader = csv.DictReader(io.StringIO(content.lstrip('\ufeff')))
@@ -115,7 +123,9 @@ class Ledger:
         inserted, duplicates, automatic, pending = [], 0, 0, 0
         with self.connection() as con:
             con.execute('BEGIN IMMEDIATE')
+            next_id=max(con.execute('SELECT last_id FROM transaction_sequence WHERE singleton=1').fetchone()[0],con.execute('SELECT COALESCE(MAX(id),0) FROM transactions').fetchone()[0])
             for record in records:
+                if record['source_platform']=='wechat':record['category_source']='rule'
                 original_identity = record['fingerprint']
                 existing = con.execute('SELECT id FROM transactions WHERE fingerprint=? OR import_fingerprint=?', (original_identity,original_identity)).fetchone()
                 if existing:
@@ -126,24 +136,51 @@ class Ledger:
                         'memory_id':None,'memory_version':None,'review_status':'confirmed','decision_reason':'用户核对快速记账后确认保存。'}
                         if confirmed else self.memory.decision(record, con))
                     revised = validate_record({**record,**decision,'amount':str(Decimal(record['amount_fen'])/100)})
-                    values = {**record,**revised,**decision,'import_fingerprint':original_identity,'created_at':datetime.now(timezone.utc).isoformat()}
-                    cur = con.execute('''INSERT INTO transactions(date,description,amount_fen,kind,category,fingerprint,category_source,created_at,
+                    values = {**record,**revised,**decision,'id':next_id+1,'import_fingerprint':original_identity,'created_at':datetime.now(timezone.utc).isoformat(),
+                        'ingestion_origin':'wechat' if record['source_platform']=='wechat' else origin,
+                        'description_origin':(description_origin or 'user') if origin=='entry' else 'file'}
+                    cur = con.execute('''INSERT INTO transactions(id,date,description,amount_fen,kind,category,fingerprint,category_source,created_at,
                         counterparty,note,source_kind,source_category,import_fingerprint,memory_id,memory_version,review_status,decision_reason,
-                        source_platform,external_id,source_status,occurred_at)
-                        VALUES(:date,:description,:amount_fen,:kind,:category,:fingerprint,:category_source,:created_at,
+                        source_platform,external_id,source_status,occurred_at,ingestion_origin,description_origin)
+                        VALUES(:id,:date,:description,:amount_fen,:kind,:category,:fingerprint,:category_source,:created_at,
                         :counterparty,:note,:source_kind,:source_category,:import_fingerprint,:memory_id,:memory_version,:review_status,:decision_reason,
-                        :source_platform,:external_id,:source_status,:occurred_at)''',values)
+                        :source_platform,:external_id,:source_status,:occurred_at,:ingestion_origin,:description_origin)''',values)
                     inserted.append(cur.lastrowid)
+                    next_id=cur.lastrowid
                     automatic += decision['review_status']=='auto'
                     pending += decision['review_status']=='needs_review'
                 except sqlite3.IntegrityError:
                     duplicates += 1
+            con.execute('UPDATE transaction_sequence SET last_id=? WHERE singleton=1',(next_id,))
             self.audit(con, 'import', {'inserted_ids': inserted, 'duplicates': duplicates})
         return {'inserted': len(inserted), 'duplicates': duplicates, 'ids': inserted, 'auto_labeled':automatic,'needs_review':pending}
 
     def transactions(self):
         with self.connection() as con:
             return [dict(r) for r in con.execute('SELECT * FROM transactions ORDER BY date DESC,id DESC')]
+
+    def delete_transaction(self, raw):
+        if (not isinstance(raw, dict) or set(raw) != {'id', 'expected_revision'}
+                or type(raw['id']) is not int or raw['id'] <= 0
+                or type(raw['expected_revision']) is not int or raw['expected_revision'] <= 0):
+            raise DomainError('请选择要删除的账单，并使用最新的账单详情。')
+        # Keep a concurrent purpose chat from recreating an invalidated draft.
+        with self.setup_chat.lock, self.connection() as con:
+            con.execute('BEGIN IMMEDIATE')
+            old = con.execute('SELECT * FROM transactions WHERE id=?', (raw['id'],)).fetchone()
+            if not old:
+                raise DomainError('这笔账单已不存在，请刷新账单列表。')
+            if old['revision'] != raw['expected_revision']:
+                raise DomainError('这笔账单已修改，请重新打开详情，核对后再删除。')
+            con.execute('DELETE FROM transactions WHERE id=?', (old['id'],))
+            con.execute('DELETE FROM period_reports')
+            con.execute("DELETE FROM settings WHERE key='generated_plan'")
+            for draft in con.execute("SELECT id,context FROM setup_chats WHERE mode='purpose'").fetchall():
+                context = json.loads(draft['context'])
+                if context.get('record_id') == old['id'] and not context.get('memory_id'):
+                    con.execute('DELETE FROM setup_chats WHERE id=?', (draft['id'],))
+            self.audit(con, 'transaction_delete', {'id':old['id'], 'before':dict(old)})
+        return {'id':raw['id'], 'deleted':True}
 
     def edit(self, record_id, patch):
         if not isinstance(patch, dict) or not patch or set(patch) - {'date', 'description', 'amount', 'kind', 'category','counterparty','note'}:
@@ -154,10 +191,11 @@ class Ledger:
                 raise DomainError('Record does not exist.')
             raw = {**dict(old), 'amount': str(Decimal(old['amount_fen']) / 100), **patch}
             new = validate_record(raw)
+            new['description_origin']='user' if 'description' in patch and new['description']!=old['description'] else old['description_origin']
             try:
                 con.execute('''UPDATE transactions SET date=:date,description=:description,amount_fen=:amount_fen,kind=:kind,
                     category=:category,fingerprint=:fingerprint,counterparty=:counterparty,note=:note,category_source='human',
-                    memory_id=NULL,memory_version=NULL,review_status='confirmed',decision_reason='Manual correction',revision=revision+1 WHERE id=:id''', {**new, 'id': record_id})
+                    memory_id=NULL,memory_version=NULL,review_status='confirmed',decision_reason='Manual correction',description_origin=:description_origin,revision=revision+1 WHERE id=:id''', {**new, 'id': record_id})
             except sqlite3.IntegrityError:
                 raise DomainError('Edit would duplicate another record. No changes saved.') from None
             self.audit(con, 'edit', {'id': record_id, 'before': dict(old), 'after': new})

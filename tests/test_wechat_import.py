@@ -51,6 +51,7 @@ class WechatImportTests(unittest.TestCase):
         raw=upload([payment('a',交易类型='转账',商品='转账给舍友',备注='电费和空调费'),payment('b',交易类型='零钱提现',商品='/',备注='/',**{'收/支':'/'})])
         p=self.importer.preview(raw);self.assertEqual(p['expense_fen'],2520);self.assertEqual(p['transfer_fen'],2520);self.save(raw)
         self.assertEqual(next(r for r in self.ledger.transactions() if r['external_id']=='a')['category'],'Utilities')
+        self.assertEqual(next(r for r in self.ledger.transactions() if r['external_id']=='a')['category_source'],'rule')
     def test_refunds_not_counted_as_new_income_and_partial_refunds_use_net(self):
         raw=upload([payment('a',当前状态='已全额退款'),payment('b',交易类型='商户-退款',**{'收/支':'收入'}),payment('c',当前状态='已退款(￥5.20)')])
         p=self.importer.preview(raw);self.assertEqual(p['excluded_count'],2);self.assertEqual(p['income_fen'],0);self.assertEqual(p['expense_fen'],2000);self.assertEqual(p['partial_refund_fen'],520)

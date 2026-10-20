@@ -75,7 +75,7 @@ class SetupChat:
         def value(match):return str(Decimal(match[1])*({'万':10000,'千':1000}.get(match[2],1)))
         if mode=='entry':
             try:
-                result=self.ledger.quick_entry.draft({'text':message,'use_model':False})['record']
+                result=self.ledger.quick_entry.draft({'text':message,'use_model':False},store=False)['record']
                 if re.fullmatch(r'\s*\d+(?:\.\d+)?\s*元?\s*',message) and draft.get('description'):
                     result={**draft,'amount':result['amount']}
                 return result
@@ -166,13 +166,17 @@ class SetupChat:
             if not goal:raise DomainError('请先选择进行中的目标。')
             context={'goal_id':goal['id'],'goal_title':goal['title']}
         if mode=='purpose':
-            record=next((r for r in self.ledger.transactions() if r['id']==raw.get('record_id')),None)
-            if not record:raise DomainError('请先选择要确认用途的账单。')
-            context={'record_id':record['id'],'expected_revision':record['revision'],'record':{k:record[k] for k in ('description','counterparty','note','source_kind','source_category')}}
+            memory=None
             if raw.get('memory_id'):
                 memory=next((m for m in self.ledger.memory.list() if m['id']==raw['memory_id']),None)
                 if not memory:raise DomainError('这条记忆不存在。')
-                if memory['source_id']!=record['id']:raise DomainError('请从这条记忆的来源账单开启修改。')
+                if memory['source_id']!=raw.get('record_id'):raise DomainError('请从这条记忆的来源账单开启修改。')
+            record=next((r for r in self.ledger.transactions() if r['id']==raw.get('record_id')),None)
+            # A saved rule retains its approved example after the source bill is deleted.
+            if record is None and memory:record=memory['example']
+            if not record:raise DomainError('请先选择要确认用途的账单。')
+            context={'record_id':record['id'],'expected_revision':record['revision'],'record':{k:record[k] for k in ('description','counterparty','note','source_kind','source_category')}}
+            if memory:
                 context.update(memory_id=memory['id'],memory_version=memory['version'])
                 return {**{k:copy.deepcopy(memory[k]) for k in ('kind','category','purpose','auto_apply','match')},'remember':True},context
             return {'kind':record['kind'],'category':record['category'],'remember':False,'auto_apply':False,'match':{k:record[k] for k in ('counterparty','description','note') if record[k]}},context
@@ -225,6 +229,9 @@ class SetupChat:
                         if field in local and local.get(field)!=previous.get(field) and candidate.get(field)!=local[field]:raise ValueError()
                     draft=candidate;reply=data['reply'];source='ai'
                 except (ProviderError,DomainError,ValueError,KeyError,TypeError):notice='AI 暂不可用或草稿未通过校验，已使用本地对话整理。你仍可继续补充和确认。'
+            if mode=='entry':
+                if draft.get('description')!=previous.get('description'):state['context']['description_origin']='local'
+                if source=='ai' and 'description' in data['patch']:state['context']['description_origin']='ai'
             if mode=='purpose':
                 # Consent is an explicit user decision, never an inferred model setting.
                 if policy is not None:
@@ -259,7 +266,7 @@ class SetupChat:
             if not preview['ready']:raise DomainError('还有必要信息未确定，请继续对话。')
             if state['mode']=='goal':result=self.ledger.adventure.create_goal({**state['draft'],'request_id':state['id']})
             elif state['mode']=='budget':result=self.ledger.set_budget(state['draft']['category'],state['draft']['amount'])
-            elif state['mode']=='entry':result=self.ledger.quick_entry.save(state['draft'])
+            elif state['mode']=='entry':result=self.ledger.quick_entry.save(state['draft'],description_origin=state['context'].get('description_origin','unknown'))
             elif state['mode']=='allocation':result=self.ledger.adventure.add_entry({**state['draft'],'goal_id':state['context']['goal_id'],'request_id':state['id']})
             elif state['mode']=='reflection':result=self.ledger.adventure.reflect(state['draft'])
             elif state['mode']=='purpose':

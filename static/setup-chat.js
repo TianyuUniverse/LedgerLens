@@ -17,7 +17,7 @@ function renderSetupChat(){
   const selectedMemory=state.memories.find(m=>m.id===setupContext.memory_id);
   const selectedRecord=state.transactions.find(r=>r.id===setupContext.record_id)||selectedMemory?.example;
   $('setup-purpose-context').hidden=setupMode!=='purpose';
-  $('setup-purpose-context').innerHTML=setupMode==='purpose'&&selectedRecord?`<div class="purpose-bill-context"><div><strong>${esc(l(selectedRecord.description))}</strong><strong>${cash(selectedRecord.amount_fen)}</strong></div><p>${esc(selectedRecord.date)} · ${esc(selectedRecord.counterparty||'未提供交易对方')}</p>${selectedRecord.note?'<p>备注：'+esc(selectedRecord.note)+'</p>':''}<p>当前分类：${esc(l(selectedRecord.kind))} · ${esc(l(selectedRecord.category))}</p></div>`:'';
+  $('setup-purpose-context').innerHTML=setupMode==='purpose'&&selectedRecord?`<div class="purpose-bill-context"><div><strong>${esc(l(selectedRecord.description))}</strong><strong>${cash(selectedRecord.amount_fen)}</strong></div><p>${esc(selectedRecord.date)} · ${esc(selectedRecord.counterparty||'未提供交易对方')}</p>${selectedRecord.note?'<p>备注：'+esc(selectedRecord.note)+'</p>':''}<p>${selectedMemory&&!state.transactions.some(r=>r.id===setupContext.record_id)?'来源账单已删除，以下为保存记忆时的参考内容。':'当前分类：'+esc(l(selectedRecord.kind))+' · '+esc(l(selectedRecord.category))}</p></div>`:'';
 
   $('setup-messages').innerHTML=history.map(m=>`<div class="setup-message ${m.role==='user'?'from-user':'from-coach'}">${m.role==='user'?'':'<span class="setup-avatar">✦</span>'}<p>${esc(m.content)}</p></div>`).join('');
   $('setup-starters').innerHTML=setupResult?'':starters[setupMode].map(setupChip).join('');
