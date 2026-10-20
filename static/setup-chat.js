@@ -22,7 +22,7 @@ function renderSetupChat(){
   $('setup-messages').innerHTML=history.map(m=>`<div class="setup-message ${m.role==='user'?'from-user':'from-coach'}">${m.role==='user'?'':'<span class="setup-avatar">✦</span>'}<p>${esc(m.content)}</p></div>`).join('');
   $('setup-starters').innerHTML=setupResult?'':starters[setupMode].map(setupChip).join('');
   $('setup-source').textContent=setupResult?(setupResult.source==='ai'?'AI 正在帮你完善细节':'本地对话整理'):'先说想法，不必先填表格';
-  $('setup-notice').textContent=setupResult?.notice||setupResult?.validation_notice||'';
+  $('setup-notice').textContent=l(setupResult?.notice||setupResult?.validation_notice||'');
   const result=setupResult,d=result?.draft||(selectedMemory?{...selectedMemory,remember:true}:null);
   $('setup-preview').innerHTML='';
   if(d&&Object.keys(d).length){
