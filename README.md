@@ -4,9 +4,19 @@ A runnable CSSE2026 project with a browser, standard-library Python backend and 
 
 The software interface defaults to Simplified Chinese, including categories, validation, provenance, conversations, templates and exports. Original user text and internal identifiers remain intact. Chinese and English CSV headers/kinds/categories are accepted.
 
+## 现在从对话开始
+
+打开后通过侧栏或手机导航进入 **首页、账单、图表、冒险、记忆、储蓄、AI 助手**，每个视图独立显示。
+
+所有业务录入默认使用小狐管家的 **对话 → 草稿 → 确认**：记一笔、设立目标、预算、储蓄方案、存入或取回、复盘、分类用途与记忆。直接说“我想攒钱旅行”，AI 会问必要细节；不必先填完表格。原表单可从“手动填写”打开。
+
+冒险页新增可玩的 **小狐线索小岛**：点选或按数字键找用途线索，答对后点击前进或按方向键移动角色。AI 编写探险引子，程序核验答案和每日奖励。见 [本轮设计与验证](docs/UPDATE_2026-10-20.md)。
+
+![对话式目标草稿](docs/images/conversational-goal.png)
+
 ## Run
 
-Requires Python 3.10+ and a modern browser. The application needs no third-party packages.
+Requires Python 3.11+ and a modern browser. The application needs no third-party packages.
 
 ```powershell
 python app.py
@@ -14,9 +24,30 @@ python app.py
 
 Open http://127.0.0.1:8765, or double-click `Start_LedgerLens.bat`. Click **加载示例账单** for 30 synthetic records. Imports append and skip duplicates without replacing existing records. Data persists in `data/ledger.sqlite`. For an independent workspace run `python app.py --port 8768 --db data/new-demo.sqlite`.
 
+## 成长图鉴、AI 向导与快速记账
+
+本轮界面参考用户提供的记账软件截图，采用黄色强调色、白色卡片、细线图标和手机底部导航，保留 LedgerLens 的独立名称与功能。
+
+- **记一笔**：分类网格与表单；一句话生成可编辑草稿，核对后保存。金额和日期由程序提取；可选 AI 理解用途；重复提交跳过。手动确认的分类优先于自动记忆。
+- **成长图鉴**：周报／月报、每日收支折线图、分类环形图、目标累计储蓄轨迹、预算进度和六维雷达图。点击数据或来源标签可核对账单，图表可导出为 SVG。
+- **AI 小狐向导**：理解本期汇总指标，给出带事实引用的建议、可前往现有功能的行动卡，以及连续四格分镜和对白。向导也出现在游戏任务面板。
+- **明确的数据边界**：缺少记录的维度暂不评分；当前周期按相同已过天数比较；转账不计收支。六维图是本项目定义的习惯标尺，不是个人信用评分。目标来自用户记录，非银行核验。
+
+打开软件和更改周期会自动整理本地报告。AI 报告需要勾选同意并点击生成，只发送汇总事实与指标，不发送逐笔商户、交易对方和备注。同一份数据的 AI 报告持久缓存，重新打开可直接查看；账本变动后需重新生成。应用关闭时不会在后台定时调用模型。
+
+四格插画是项目预制的简约卡通素材；**本期分镜与对白由运行时 AI 生成**，并非每次重新绘制图片。服务失败或引用无效时清楚显示本地模板。详见 [报告与 AI 设计](docs/AI_REPORTS_DESIGN.md)。
+
+![简约目标冒险](docs/images/adventure-minimal.png)
+
+![成长图鉴与 AI 四格日记](docs/images/reports-desktop.png)
+
+## GitHub 协作
+
+公开仓库：https://github.com/TianyuUniverse/LedgerLens 。真实分支、PR、CI 和贡献填写方式见 [CONTRIBUTING.md](CONTRIBUTING.md)。首次提交导入已有原型，后续提交记录实际改动；没有模拟三位成员的提交或审核。私有配置、账本、临时文件和历史提交材料不上传。
+
 ## Goal adventure / 目标冒险
 
-Click **开启新目标** to name a personal wish, set an amount, an optional date and its starting savings. Use **记录储蓄进展** for money you confirm has been set aside, or record a withdrawal when plans change. The camp develops at 25%, 50%, 75% and 100%. Progress survives reloads and archiving; up to three goals can be active.
+Click **和 AI 聊聊目标** to describe a wish. The assistant asks for necessary details and shows a draft before confirmation; the original amount/date form is available as an optional manual fallback. Use **记录储蓄进展** for money you confirm has been set aside, or record a withdrawal when plans change. The camp develops at 25%, 50%, 75% and 100%. Progress survives reloads and archiving; up to three goals can be active.
 
 These are self-reported earmarked savings, not verified bank balances or forecasted income. They do not create or change ledger transactions. Starting savings set the journey position without milestone XP. Subsequent entries use exact fen arithmetic and operation IDs to make retries idempotent.
 
@@ -68,7 +99,7 @@ The tool allowlist is `query_transactions`, `compare_periods`, `generate_savings
 python scripts/verify.py
 ```
 
-This runs **107 domain/HTTP tests** on temporary databases without external model calls or changes to your ledger. The record is `output/evidence/verification.json`; the original 28-test evidence is preserved under `output/evidence/baseline-20261009/`. The legacy rules benchmark remains 18/20 on an authored, rules-informed synthetic convenience sample; baseline grounded Q&A remains 9/9. These figures are not representative accuracy.
+This runs **150 domain/HTTP tests** on temporary databases without external model calls or changes to your ledger. The record is `output/evidence/verification.json`; the original 28-test evidence is preserved under `output/evidence/baseline-20261009/`. The legacy rules benchmark remains 18/20 on an authored, rules-informed synthetic convenience sample; baseline grounded Q&A remains 9/9. These figures are not representative accuracy.
 
 Optional Edge/Playwright browser replays:
 
@@ -76,6 +107,8 @@ Optional Edge/Playwright browser replays:
 node scripts/browser_check.cjs
 node scripts/workflow_browser_check.cjs
 node scripts/adventure_browser_check.cjs
+node scripts/reports_browser_check.cjs
+node scripts/setup_browser_check.cjs
 ```
 
 These use temporary databases, disable external calls, and check original, AI workflow and goal-adventure interactions plus 390px mobile overflow. Install Playwright and Microsoft Edge first; set `FINANCE_PYTHON` if an explicit Python executable is needed. The original browser script's `--record` option records the baseline demo.
@@ -90,6 +123,9 @@ This explicitly consumes provider API usage on a temporary synthetic ledger. The
 
 | Path | Responsibility |
 | --- | --- |
+| `ledger/setup_chat.py`, `static/setup-chat.js` | Revisioned conversation drafts and explicit confirmation for seven input flows |
+| `ledger/trials.py`, `static/trials.js` | Playable daily synthetic cases, AI story introductions and server-checked rewards |
+| `static/pages.js`, `static/comfort.css` | Seven views, readable typography and restrained interaction |
 | `app.py` | Loopback HTTP, session token, same-origin boundary and routes |
 | `ledger/service.py` | Schema migration, imports, edits, overview, budgets, manual scenarios and audit |
 | `ledger/domain.py`, `ledger/memory.py` | Exact-money validation and approved purpose memory |

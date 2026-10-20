@@ -7,20 +7,20 @@ const adventureIcon=name=>{
   return `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="${paths[name]||paths.star}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 };
 function adventureScene(stage){
-  return `<svg class="journey-scene" viewBox="0 0 640 270" role="img" aria-label="随储蓄进度逐步建成的营火、树屋、观景台和梦想营地">
-  <rect width="640" height="270" rx="16" fill="var(--world-sky)"/>
-  <g class="world-cloud" fill="white" opacity=".68"><ellipse cx="115" cy="61" rx="42" ry="11"/><circle cx="104" cy="52" r="15"/><circle cx="128" cy="53" r="11"/><ellipse cx="446" cy="45" rx="40" ry="9"/><circle cx="435" cy="38" r="13"/></g>
-  <circle cx="535" cy="48" r="24" fill="var(--world-sun)"/><g class="world-stars" fill="#e9e3ad"><path d="M107 38l3 7 8 2-8 2-3 8-2-8-8-2 8-2zM366 25l2 5 6 2-6 2-2 6-2-6-5-2 5-2zM470 78l2 5 6 2-6 2-2 6-2-6-5-2 5-2z"/><circle cx="250" cy="36" r="2"/><circle cx="580" cy="104" r="2"/><circle cx="53" cy="80" r="2"/></g>
-  <path d="M0 148L78 78l74 69 91-91 86 93 94-67 105 72 67-65 45 49v132H0z" fill="var(--world-mountain)"/><path d="M0 172q96-70 181-4t192-6 267 6v102H0z" fill="var(--world-hill)"/>
-  <ellipse cx="330" cy="238" rx="270" ry="25" fill="var(--world-water)"/><path d="M33 179q80-70 173-21t176-12 222 40q6 57-279 59T33 179" fill="var(--world-ground)"/>
-  <g fill="var(--world-tree)"><path d="M47 172l16-42 16 42zM557 153l14-39 15 39zM476 136l11-31 12 31zM119 128l12-32 12 32z"/><path d="M62 166v16m510-35v16m-85-34v13m-356-20v15" stroke="var(--world-tree)" stroke-width="4"/></g>
-  <path d="M80 193q72 35 118-17t120 7 116-10 116 16" fill="none" stroke="var(--world-path)" stroke-width="10" stroke-linecap="round"/>
-  <g class="world-building ${stage>=1?'built':''}"><path d="M180 173l30 0m-25 8 21-14" stroke="#94715d" stroke-width="7" stroke-linecap="round"/><path d="M195 174q-19-9 0-34-2 12 9 14 9 15-9 20" fill="#edb15d"/><path d="M195 173q-10-6 0-18 10 11 0 18" fill="#f9e8a7"/></g>
-  <g class="world-building ${stage>=2?'built':''}"><rect x="286" y="110" width="60" height="58" rx="4" fill="#c29d77"/><path d="M277 115l40-35 40 35z" fill="var(--world-roof)"/><rect x="309" y="138" width="15" height="30" rx="3" fill="#6a7661"/><rect x="294" y="125" width="10" height="11" fill="#fae9af"/><rect x="331" y="125" width="10" height="11" fill="#fae9af"/></g>
-  <g class="world-building ${stage>=3?'built':''}" stroke="#a78c69" stroke-width="5"><path d="M423 167l7-77h23l7 77M425 138h31m-29-17h27m-30 45 30-46m-25 0 28 46" fill="none"/><path d="M416 89h48l-24-19z" fill="var(--world-roof)" stroke="none"/><rect x="421" y="88" width="39" height="9" rx="3" fill="#bfa782" stroke="none"/></g>
-  <g class="world-building ${stage>=4?'built':''}"><path d="M541 173V93" stroke="#90795e" stroke-width="5"/><path d="M544 94q20-15 39-3v26q-20-12-39 3z" fill="var(--world-roof)"/><path d="M559 99l3 6 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1z" fill="#ffefb1"/></g>
-  <g class="world-traveler" transform="translate(${[79,197,317,439,541][stage]},187)"><circle cy="-14" r="11" fill="#fff8e4" stroke="var(--world-roof)" stroke-width="3"/><path d="M-7-16q7-14 14 0" stroke="var(--world-roof)" stroke-width="4" fill="none"/><rect x="-9" y="-4" width="18" height="18" rx="7" fill="var(--world-roof)"/><path d="M-5 12v8m10-8v8" stroke="#53645c" stroke-width="4" stroke-linecap="round"/></g>
-  <g fill="#fff6dc" opacity="${stage===4?1:0}"><path d="M497 126l3 7 8 2-8 2-3 8-2-8-8-2 8-2zM596 158l2 5 6 2-6 2-2 6-2-6-5-2 5-2z"/></g></svg>`;
+  const theme=state?.adventure.theme||'forest',accent=theme==='ocean'?'#93c6cf':theme==='space'?'#b8acd7':'#b5c99d';
+  const nodes=[[77,181],[190,101],[319,178],[445,101],[563,170]];
+  const icons=['<path d="M-7 8V-8m0 0q9-8 19-1v11q-10-6-19 1"/>','<path d="m-12 9 11-7 11 7M-9 10H9M0 2q-13-9 0-23-1 8 6 10 6 8-6 13z"/>','<path d="m-15-2 15-14L15-2M-11-2v16h22V-2M-3 14V3h6v11"/>','<path d="M-10 14h20M-8 10l3-26h10l3 26M-7-6H7M-7 2H7M-5-16l5-6 5 6"/>','<path d="m0-17 5 10 11 2-8 8 2 11-10-5-10 5 2-11-8-8 11-2z"/>'];
+  const [fx,fy]=nodes[stage];
+  return `<svg viewBox="0 0 640 280" class="journey-scene" role="img" aria-label="目标冒险地图，已点亮 ${stage} 个里程碑" xmlns="http://www.w3.org/2000/svg">
+  <defs><pattern id="camp-dots" width="18" height="18" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#eae7d7"/></pattern></defs>
+  <rect x="18" y="18" width="604" height="246" rx="24" fill="#fffdf5"/><rect x="18" y="18" width="604" height="246" rx="24" fill="url(#camp-dots)"/>
+  <ellipse cx="150" cy="220" rx="55" ry="11" fill="${accent}" opacity=".16"/><ellipse cx="488" cy="213" rx="67" ry="12" fill="${accent}" opacity=".18"/>
+  <path d="M77 181C123 181 139 101 190 101S263 178 319 178 392 101 445 101 521 170 563 170" fill="none" stroke="#e7e1ca" stroke-width="16" stroke-linecap="round"/>
+  <path d="M77 181C123 181 139 101 190 101S263 178 319 178 392 101 445 101 521 170 563 170" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="3 10" stroke-linecap="round"/>
+  ${nodes.map(([x,y],i)=>`<g transform="translate(${x},${y})"><ellipse cy="23" rx="25" ry="5" fill="#eee9d5"/><circle r="25" fill="${i<=stage?'#ffe378':'#fff'}" stroke="${i<=stage?'#d4b548':'#dedfdc'}" stroke-width="1.5"/><g stroke="${i<=stage?'#82702f':'#bbbbb2'}" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${icons[i]}</g><text y="46" text-anchor="middle" font-family="Microsoft YaHei,Segoe UI,sans-serif" font-size="10" fill="${i<=stage?'#a28a32':'#b7b7ad'}">${['出发','25% 营火','50% 小屋','75% 观景台','100% 愿望'][i]}</text></g>`).join('')}
+  <g transform="translate(${fx},${fy-48})" class="world-traveler"><path d="M-13-8-15-24-3-15q7-4 13 0l12-9-3 18q4 17-16 18T-13-8" fill="#fff8dc" stroke="#a18f53" stroke-width="1.5"/><circle cx="-5" cy="-3" r="1.8" fill="#594f36"/><circle cx="9" cy="-3" r="1.8" fill="#594f36"/><path d="m0 3 3 2 3-2" fill="none" stroke="#594f36" stroke-linecap="round"/><path d="M-9 9q12 6 22-1l-1 7q-12 5-21-1z" fill="#f1cd45"/></g>
+  <g fill="none" stroke="${accent}" stroke-width="2" stroke-linecap="round"><path d="M51 81v-20m0 11q-10 0-10-9 10 0 10 9m0-4q10 0 10-10-10 0-10 10M391 222v-20m0 11q-10 0-10-9 10 0 10 9m0-4q10 0 10-10-10 0-10 10"/></g>
+  <g stroke="#e5ce77" stroke-width="1.5"><path d="M317 54v12m-6-6h12M574 73v10m-5-5h10"/></g></svg>`;
 }
 
 function renderAdventure(){
@@ -53,17 +53,20 @@ function renderAdventure(){
   $('adventure-rewards').innerHTML=game.recent_rewards.length?game.recent_rewards.map(reward=>`<p><strong>＋${reward.xp} 经验</strong> · ${esc(reward.title)}<small>${esc(reward.day)}</small></p>`).join(''):'<p class="muted">完成小任务，点亮第一份成长记录。</p>';
 }
 
-function openAdventureGoal(){
+function openAdventureGoal(){openSetupChat('goal');}
+function openManualAdventureGoal(){
   $('adventure-goal-form').reset();$('adventure-goal-deadline').min=state.adventure.today;$('adventure-goal-deadline').value=state.adventure.suggested_deadline;
   $('adventure-goal-error').textContent='';adventureDrafts.goal=null;$('adventure-goal-dialog').showModal();
 }
-function openAdventureEntry(id){
+function openAdventureEntry(id){openSetupChat('allocation',{goal_id:id});}
+function openManualAdventureEntry(id){
   const goal=state.adventure.goals.find(g=>g.id===id);if(!goal||goal.archived)return;
   adventureEntryGoal=id;$('adventure-entry-form').reset();$('adventure-entry-title').textContent=goal.title;
   $('adventure-entry-balance').textContent='目前已为此目标记录 '+cash(goal.balance_fen)+'，目标 '+cash(goal.target_fen)+'。';
   $('adventure-entry-error').textContent='';adventureDrafts.entry=null;$('adventure-entry-dialog').showModal();
 }
-function openAdventureReflection(month){
+function openAdventureReflection(month){openSetupChat('reflection',{month:month||$('review-month').value||undefined});}
+function openManualAdventureReflection(month){
   $('adventure-reflect-month').value=month||$('review-month').value||state.overview.months.at(-1)?.month||'';
   $('adventure-reflect-note').value=state.adventure.reflection?.note||'';$('adventure-reflect-error').textContent='';$('adventure-reflect-dialog').showModal();
 }
@@ -98,7 +101,7 @@ $('adventure').addEventListener('click',event=>run(async()=>{
   if(button.dataset.adventureArchive){adventureArchiveGoal=Number(button.dataset.adventureArchive);$('adventure-archive-copy').textContent='归档“'+state.adventure.goals.find(g=>g.id===adventureArchiveGoal).title+'”后，它会从进行中的目标移走。';$('adventure-archive-dialog').showModal();}
   if(button.dataset.adventureRestore){await api('/api/adventure/archive',{goal_id:Number(button.dataset.adventureRestore),archived:false});focusedAdventureGoal=Number(button.dataset.adventureRestore);await refresh();}
   if(button.dataset.adventureQuest==='import'){$('csv-file').click();}
-  if(button.dataset.adventureQuest==='review'){const record=state.transactions.find(r=>r.review_status==='needs_review');if(record)openPurpose(record);else{notice('没有待确认账单时无需重复审核；导入新的模糊账单后再完成此任务。');$('records').scrollIntoView({behavior:'smooth'});}}
+  if(button.dataset.adventureQuest==='review'){const record=state.transactions.find(r=>r.review_status==='needs_review');if(record)openPurpose(record);else{notice('没有待确认账单时无需重复审核；导入新的模糊账单后再完成此任务。');navigatePage('records');$('records').scrollIntoView({behavior:'smooth'});}}
   if(button.dataset.adventureQuest==='reflect')openAdventureReflection();
 }));
 $('adventure-confirm-archive').addEventListener('click',()=>run(async()=>{await api('/api/adventure/archive',{goal_id:adventureArchiveGoal,archived:true});$('adventure-archive-dialog').close();await refresh();notice('目标已收好，历史记录和经验都已保留。');}));

@@ -1,6 +1,6 @@
 # Test and evaluation report
 
-Updated 19 October 2026. Run `python scripts/verify.py` to reproduce the 107 domain/HTTP tests and legacy baseline checks. Tests use temporary databases, no external provider calls, and do not change a personal ledger. The latest counts and timestamps are in `output/evidence/verification.json`; individual results are in `test_log.txt`. The original 28-test record is preserved under `output/evidence/baseline-20261009/`.
+Updated 20 October 2026. Run `python scripts/verify.py` to reproduce the 150 domain/HTTP tests and legacy baseline checks. Tests use temporary databases, no external provider calls, and do not change a personal ledger. The latest counts and timestamps are in `output/evidence/verification.json`; individual results are in `test_log.txt`. The original 28-test record is preserved under `output/evidence/baseline-20261009/`.
 
 The suite covers exact fen arithmetic, complete-batch validation, duplicate/concurrent imports, audit-failure rollback, edits, calendar windows, manual scenarios, budgets and grounded answer sources. New memory checks cover original labels, correction from transfer to expense, future approved reuse, same-school tuition and unrelated-roommate counterexamples, generic payment-label rejection, true own-account transfers, conflicting/review-only memories, stale confirmation, versioning, disabling/deletion without rewriting history, migration/reopen and deduplication after kind correction.
 
@@ -19,3 +19,17 @@ Chinese localization checks additionally cover Chinese CSV headers/kinds/categor
 The 19 October goal-adventure addition contributes 24 domain/HTTP tests: allocation arithmetic and unchanged financial records; goal capacity and archive/restore; input rejection; request replay/conflicts; concurrent retries; insufficient withdrawals; milestone deduplication after withdrawals; starting-progress handling; daily cross-goal XP cap; rollback of allocation/reward/audit together; new-row-only import rewards; real pending-purpose and memory rewards; reflection data requirements; Shanghai midnight, streak and weekly boundaries; theme authorization; persistence; read-only tool isolation; and protected HTTP routes.
 
 `adventure_browser_check.json` records a complete synthetic journey: a RMB 1,000 goal, real import/review/memory/reflection/planning actions, milestone progress, withdrawal/redeposit, request replay, themes, archive/restore, persisted reload and 390px layout. The recorded path reaches RMB 1,000 and 375 XP at level 4 without external model calls. Scenery screenshots are `adventure-start.png`, `adventure-quarter.png`, `adventure-complete.png` and `adventure-mobile.png`. No engagement or real saving improvement has been measured.
+
+
+## 2026-10-19 图鉴、AI 向导与简约界面
+
+新增快速记账、周／月报告、折线图／环形图／目标轨迹／预算进度／六维雷达图、AI 建议与任务卡、四格分镜对白、预制卡通素材和游戏小狐向导。新增 22 项测试，当前自动测试合计 **129 项通过**。`scripts/reports_browser_check.cjs` 验证周期切换、来源、草稿与保存、六维图、素材、图表导出与 390px 布局；原三组浏览器流程继续验证。
+
+`output/evidence/live_reports_check.json` 记录本轮 **2 次报告 + 1 次记账草稿** 的真实 DeepSeek 集成调用，全部成功，账本和经验未改动。只是三项合成场景，不能作为模型准确率或真实用户研究结果。周报和月报由应用打开／周期切换时本地计算；云端 AI 生成需主动勾选与点击，不声称软件关闭时也能定时生成。
+
+公开仓库排除私人数据库、API 配置和历史输出材料；贡献分工仍为拟定分工。新增 CI、PR 模板、issue 模板与 CONTRIBUTING，不虚构多人开发历史。设计说明见 `docs/AI_REPORTS_DESIGN.md`。
+
+
+## 2026-10-20 更新
+
+当前版为七个独立视图，七类业务录入默认使用 AI 对话、可修改草稿与最后确认；训练场支持三关练习、角色移动和服务端每日奖励。按钮、滑条、输入框宽度和字号已统一，数字步进箭头与课程页脚已移除。原有手动表单保留为备用入口。完整说明、数据边界和复现命令见 [本轮更新](UPDATE_2026-10-20.md)。当前自动测试 150 项，浏览器检查五组；真实模型检查只使用合成数据，不能视为准确率或用户研究。
