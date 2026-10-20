@@ -13,7 +13,7 @@ async function main(){
     const context=await browser.newContext({viewport:{width:1440,height:1150},reducedMotion:'reduce'}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
     await page.goto(base+'#insights');await page.locator('#report-radar svg').waitFor();
     check(await page.locator('#report-ai-generate').isDisabled(),'Cloud reports must be disabled without provider');
-    await page.goto(base+'#overview');await page.locator('#demo').click();await page.locator('#count').filter({hasText:'30'}).waitFor();
+    await page.goto(base+'#overview');if(!await page.locator('.import-extras').evaluate(el=>el.open))await page.locator('.import-extras summary').click();await page.locator('#demo').click();await page.locator('#count').filter({hasText:'30'}).waitFor();
     await page.goto(base+'#insights');await page.locator('#report-anchor').fill('2026-09');await page.locator('#report-anchor').dispatchEvent('change');
     await page.locator('#report-records').filter({hasText:'10 笔'}).waitFor();
     await page.locator('#report-trend svg').waitFor();check(await page.locator('#report-donut circle[role=button]').count()>0,'Donut must have evidence slices');

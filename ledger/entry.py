@@ -3,6 +3,7 @@ import csv
 import io
 import json
 import re
+import uuid
 from datetime import date,timedelta
 from .domain import DomainError,validate_record,classify_rule
 from .provider import complete,ProviderError,enabled
@@ -12,8 +13,9 @@ from .adventure import CHINA
 class QuickEntry:
     def __init__(self,ledger):
         self.ledger=ledger
+        with ledger.connection() as con:con.execute('CREATE TABLE IF NOT EXISTS entry_drafts(id TEXT PRIMARY KEY,record TEXT NOT NULL,mode TEXT NOT NULL)')
 
-    def draft(self,raw,provider=None):
+    def draft(self,raw,provider=None,*,store=True):
         if not isinstance(raw,dict) or set(raw)-{'text','use_model'} or type(raw.get('use_model',False)) is not bool:
             raise DomainError('记账草稿参数无效。')
         text=raw.get('text')
@@ -49,15 +51,24 @@ class QuickEntry:
             except (ProviderError,ValueError,KeyError,TypeError):
                 notice='AI 未能给出有效草稿，已使用本地识别。请直接修改后保存。'
         validate_record(record)
-        return {'record':record,'mode':mode,'notice':notice,'saved':False}
+        key=uuid.uuid4().hex if store else None
+        if store:
+            with self.ledger.connection() as con:con.execute('INSERT INTO entry_drafts VALUES(?,?,?)',(key,json.dumps(record,ensure_ascii=False),mode))
+        return {'record':record,'mode':mode,'notice':notice,'saved':False,'draft_id':key}
 
-    def save(self,raw):
+    def save(self,raw,*,description_origin=None):
         allowed={'date','description','amount','kind','category','counterparty','note'}
-        if not isinstance(raw,dict) or set(raw)-allowed:
+        if not isinstance(raw,dict) or set(raw)-allowed-{'draft_id'}:
             raise DomainError('记账内容包含无效字段。')
+        raw=dict(raw);key=raw.pop('draft_id',None)
+        if key is not None:
+            if not isinstance(key,str) or not re.fullmatch('[a-f0-9]{32}',key):raise DomainError('记账草稿已失效，请重新整理。')
+            with self.ledger.connection() as con:draft=con.execute('SELECT * FROM entry_drafts WHERE id=?',(key,)).fetchone()
+            if not draft:raise DomainError('记账草稿已失效，请重新整理。')
+            description_origin=('ai' if draft['mode']=='ai' else 'local') if raw.get('description')==json.loads(draft['record'])['description'] else 'user'
         record=validate_record(raw)
         if record['date']>str(self.ledger.adventure.clock().astimezone(CHINA).date()):
             raise DomainError('实际记账日期不能晚于今天。')
         output=io.StringIO();writer=csv.DictWriter(output,fieldnames=sorted(allowed));writer.writeheader();writer.writerow(raw)
-        result=self.ledger.import_csv(output.getvalue(),confirmed=True)
+        result=self.ledger.import_csv(output.getvalue(),confirmed=True,description_origin=description_origin or 'user')
         return {**result,'saved':bool(result['inserted']),'notice':'已确认保存。相同账单重复提交会被跳过。'}

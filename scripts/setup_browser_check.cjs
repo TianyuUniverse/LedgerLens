@@ -5,7 +5,7 @@ try{for(let i=0;i<60;i++){try{const r=await fetch(base+'/api/config');await r.ar
 const nav=async id=>{await p.locator('aside nav a[href="#'+id+'"]').click();await p.waitForFunction(id=>activePage===id,id);};
 for(const id of ['overview','records','insights','goals','memories','smart-plans','assistant']){await nav(id);check(await p.locator('main>section:visible').count()<=2,'Sections leaked into '+id);}
 await p.goBack();check(await p.evaluate(()=>activePage)==='smart-plans','Back navigation failed');await p.goForward();check(await p.evaluate(()=>activePage)==='assistant','Forward navigation failed');
-await nav('overview');await p.locator('#demo').click();await p.locator('#count').filter({hasText:'30'}).waitFor();
+await nav('overview');if(!await p.locator('.import-extras').evaluate(el=>el.open))await p.locator('.import-extras summary').click();await p.locator('#demo').click();await p.locator('#count').filter({hasText:'30'}).waitFor();
 async function talk(text){await p.locator('#setup-message').fill(text);await p.locator('#setup-send').click();await p.waitForFunction(()=>!setupBusy&&setupResult!==null);}
 async function confirm(){await p.locator('#setup-confirm').click();await p.locator('#setup-dialog').waitFor({state:'hidden'});}
 await nav('goals');await p.locator('#new-adventure-goal').click();await talk('我想为旅行攒钱');check(!(await p.locator('#setup-confirm').count()),'Goal committed with missing target');await talk('想攒3000元');await p.locator('#setup-preview').filter({hasText:'3,000.00'}).waitFor();

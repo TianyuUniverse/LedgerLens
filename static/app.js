@@ -13,13 +13,7 @@ function errorMessage(error){return error instanceof TypeError?'无法连接本�
 async function run(task){try{return await task();}catch(error){notice(errorMessage(error),true);return null;}}
 async function refresh(){const response=await fetch('/api/state',{headers:{'Accept-Language':'zh-CN'}});if(!response.ok)throw Error('无法读取账本，请重试。');state=await response.json();render();}
 function options(categories,selected){return categories.map(c=>`<option value="${esc(c)}" ${c===selected?'selected':''}>${esc(l(c))}</option>`).join('');}
-function showTrace(ids,label){trace=new Set(ids);$('filter').value='all';$('trace-label').textContent=label;renderRows();navigatePage('records');$('records').scrollIntoView({behavior:'smooth'});}
-function sourceDetails(r){return r.source_platform==='wechat'?`<details class="wechat-source"><summary>原始微信记录</summary><small>交易时间：${esc(r.occurred_at)}</small><small>交易状态：${esc(r.source_status)}</small><small>微信交易单号：${esc(r.external_id)}</small></details>`:'';}
-function renderRows(){
-  const category=$('filter').value;
-  const rows=state.transactions.filter(r=>(category==='all'||r.category===category)&&(!trace||trace.has(r.id)));
-  $('rows').innerHTML=rows.length?rows.map(r=>`<tr><td>#${r.id}<small>${esc(r.date)}</small></td><td>${esc(l(r.description))}<small>${esc(r.counterparty)} ${esc(r.note)}</small><small>原始标签：${esc(l(r.source_kind))} / ${esc(l(r.source_category))}</small><small>${esc(l(r.category_source))}${r.memory_id?' · 记忆 #'+r.memory_id+' · 第 '+r.memory_version+' 版':''} · ${esc(l(r.review_status))}</small>${r.decision_reason?'<small class="reason">'+esc(l(r.decision_reason))+'</small>':''}${sourceDetails(r)}</td><td>${esc(l(r.kind))}</td><td>${cash(r.amount_fen)}</td><td><select class="category-edit" data-edit="${r.id}" aria-label="账单 ${r.id} 的消费分类">${options(r.kind==='expense'?state.expense_categories:[r.kind==='income'?'Income':'Transfer'],r.category)}</select></td><td><button class="secondary small" data-review="${r.id}">获取分类建议</button><button class="${r.review_status==='needs_review'?'':'secondary '}small purpose-button" data-purpose="${r.id}">确认消费用途</button></td></tr>`).join(''):'<tr><td colspan="6">暂无对应账单，请导入 CSV 或加载示例数据。</td></tr>';
-}
+function showTrace(ids,label){trace=new Set(ids);$('record-search').value='';$('filter').value='all';$('trace-label').textContent=label;renderRows();navigatePage('records');$('records').scrollIntoView({behavior:'smooth'});}
 function renderPlan(p){
   if(!p)return;
   $('projected').textContent=cash(p.projected_fen);$('feasible').textContent=p.feasible?'按此情景可以达到目标。':'距离目标还差 '+cash(p.gap_fen);$('feasible').className=p.feasible?'ok':'warning';

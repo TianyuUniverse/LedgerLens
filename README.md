@@ -51,6 +51,12 @@ Open http://127.0.0.1:8765, or double-click `Start_LedgerLens.bat`. Click **加�
 
 原游戏地图、训练场、经验、徽章、等级和奖励弹窗已从当前界面撤下，旧 `#adventure` 地址转到 `#goals`。已有目标和记录保留，后端兼容模块仍在；历史游戏设计文档不是当前功能说明。
 
+## 账单明细与文字来源
+
+账单主列表显示日期、商家与商品、金额、分类和操作，分别标注微信／CSV 原文、用户填写或 AI 整理后确认的内容。原始标签、记忆版本等移入详情。历史记录缺少来源时不会猜测。示例加载入口收进“其他”，不默认加载。见 [内容来源与账单页说明](docs/RECORDS_UI.md)。
+
+![简化后的账单明细](docs/images/records-simple-desktop.png)
+
 ## 分类记忆
 
 1. In **分类记忆**, load **step 1**. These examples are synthetic.
@@ -95,7 +101,7 @@ The tool allowlist is `query_transactions`, `compare_periods`, `generate_savings
 python scripts/verify.py
 ```
 
-This runs **168 domain/HTTP tests** on temporary databases without external model calls or changes to your ledger. The record is `output/evidence/verification.json`; the original 28-test evidence is preserved under `output/evidence/baseline-20261009/`. The legacy rules benchmark remains 18/20 on an authored, rules-informed synthetic convenience sample; baseline grounded Q&A remains 9/9. These figures are not representative accuracy.
+This runs **175 domain/HTTP tests** on temporary databases without external model calls or changes to your ledger. The record is `output/evidence/verification.json`; the original 28-test evidence is preserved under `output/evidence/baseline-20261009/`. The legacy rules benchmark remains 18/20 on an authored, rules-informed synthetic convenience sample; baseline grounded Q&A remains 9/9. These figures are not representative accuracy.
 
 Optional Edge/Playwright browser replays:
 
@@ -103,6 +109,7 @@ Optional Edge/Playwright browser replays:
 node scripts/browser_check.cjs
 node scripts/workflow_browser_check.cjs
 node scripts/workspace_browser_check.cjs
+node scripts/records_browser_check.cjs
 node scripts/reports_browser_check.cjs
 node scripts/setup_browser_check.cjs
 ```

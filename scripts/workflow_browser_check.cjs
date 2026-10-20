@@ -17,7 +17,7 @@ async function main(){
     browser=await chromium.launch({headless:true,channel:process.env.FINANCE_BROWSER||'msedge'});
     const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage(),errors=[];
     page.on('pageerror',e=>errors.push(e.message));await page.goto(base);await page.locator('#mode').filter({hasText:'本地规则模式'}).waitFor();
-    await page.locator('#demo').click();await page.getByRole('status').filter({hasText:'新增 30 笔'}).waitFor();
+    if(!await page.locator('.import-extras').evaluate(el=>el.open))await page.locator('.import-extras summary').click();await page.locator('#demo').click();await page.getByRole('status').filter({hasText:'新增 30 笔'}).waitFor();
     await page.goto(base+'#memories');await page.locator('.memory-demo summary').click();await page.locator('#memory-seed').click();await page.locator('#setup-dialog').waitFor({state:'visible'});await page.locator('#setup-manual').click();await page.locator('#purpose-dialog').waitFor({state:'visible'});
     await page.locator('#cancel-purpose').click();
     async function confirmPayment(phrase,category,purpose){
@@ -47,7 +47,7 @@ async function main(){
     await page.locator('[data-save-style=balanced]').click();await page.getByRole('status').filter({hasText:'审核后的方案已保存'}).waitFor();
     await page.locator('#smart-plans').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,'checked-savings-plans.png')});
     // Any record revision makes the previously generated preview stale.
-    await page.goto(base+'#records');await page.locator('#rows tr').filter({hasText:'9月淘宝服饰'}).locator('[data-edit]').selectOption('Other');await page.getByRole('status').filter({hasText:'分类已更新'}).waitFor();
+    await page.goto(base+'#records');await page.locator('#rows tr').filter({hasText:'Taobao clothes September'}).locator('[data-record-details]').click();await page.locator('#record-detail-advanced summary').click();await page.locator('[data-edit]').selectOption('Other');await page.locator('#record-detail-close').click();await page.getByRole('status').filter({hasText:'分类已更新'}).waitFor();
     await page.goto(base+'#smart-plans');await page.locator('[data-save-style=shopping_first]').click();await page.getByRole('status').filter({hasText:'账单已发生变化'}).waitFor();
     await page.goto(base+'#monthly-review');await page.locator('#review-month').fill('2026-09');await page.locator('#review-form button').click();await page.locator('#review-result').filter({hasText:'小额消费'}).waitFor();
     await page.goto(base+'#assistant');
