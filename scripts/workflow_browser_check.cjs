@@ -18,7 +18,7 @@ async function main(){
     const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage(),errors=[];
     page.on('pageerror',e=>errors.push(e.message));await page.goto(base);await page.locator('#mode').filter({hasText:'本地规则模式'}).waitFor();
     await page.locator('#demo').click();await page.getByRole('status').filter({hasText:'新增 30 笔'}).waitFor();
-    await page.goto(base+'#memories');await page.locator('#memory-seed').click();await page.locator('#setup-dialog').waitFor({state:'visible'});await page.locator('#setup-manual').click();await page.locator('#purpose-dialog').waitFor({state:'visible'});
+    await page.goto(base+'#memories');await page.locator('.memory-demo summary').click();await page.locator('#memory-seed').click();await page.locator('#setup-dialog').waitFor({state:'visible'});await page.locator('#setup-manual').click();await page.locator('#purpose-dialog').waitFor({state:'visible'});
     await page.locator('#cancel-purpose').click();
     async function confirmPayment(phrase,category,purpose){
       await page.goto(base+'#records');const row=page.locator('#rows tr').filter({hasText:phrase}).first();await row.locator('[data-purpose]').click();await page.locator('#setup-manual').click();
@@ -41,7 +41,7 @@ async function main(){
     await page.locator('#purpose-text').fill('舍友代收水电用途记忆');await page.locator('#purpose-form button[type=submit]').click();await page.locator('#purpose-dialog').waitFor({state:'hidden'});
     await page.locator('#memory-list').filter({hasText:'第 2 版'}).waitFor();
     await page.locator('[data-memory-toggle]').first().click();await page.locator('#memory-list').filter({hasText:'已停用'}).waitFor();
-    await page.locator('[data-memory-toggle]').first().click();await page.locator('#memory-list').filter({hasText:'已批准自动复用'}).waitFor();
+    await page.locator('[data-memory-toggle]').first().click();await page.locator('#memory-list').filter({hasText:'自动分类'}).waitFor();
     await page.goto(base+'#smart-plans');if(await page.locator('#manual-smart-plan').evaluate(el=>!el.open))await page.locator('#manual-smart-plan summary').click();await page.locator('#smart-plan-form button[type=submit]').click();await page.locator('#plan-options .plan-option').first().waitFor();
     check(await page.locator('#plan-options .plan-option').count()===3,'Missing plan alternatives');
     await page.locator('[data-save-style=balanced]').click();await page.getByRole('status').filter({hasText:'审核后的方案已保存'}).waitFor();
@@ -64,7 +64,7 @@ async function main(){
     await page.locator('#smart-target').fill('6000');
     await page.goto(base+'#assistant');await page.screenshot({path:path.join(out,'finance-conversation.png')});
     await page.locator('#new-conversation').click();check(await page.locator('#chat-history .conversation-turn').count()===0,'Conversation reset failed');
-    await page.goto(base+'#memories');await page.locator('[data-memory-delete]').first().click();await page.getByRole('status').filter({hasText:'记忆已删除'}).waitFor();
+    await page.goto(base+'#memories');await page.locator('[data-memory-delete]').first().click();await page.locator('#memory-delete-confirm').click();await page.getByRole('status').filter({hasText:'记忆已删除'}).waitFor();
     state=await (await fetch(base+'/api/state')).json();check(state.transactions.find(r=>r.id===utility.id).category==='Utilities','Memory delete rewrote history');
     const mobile=await browser.newContext({viewport:{width:390,height:844},isMobile:true});const mp=await mobile.newPage();mp.on('pageerror',e=>errors.push(e.message));
     await mp.goto(base);await mp.locator('#count').filter({hasText:'38'}).waitFor();await mp.goto(base+'#memories');

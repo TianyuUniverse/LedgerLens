@@ -1,5 +1,8 @@
 # Test and evaluation report
 
+> 2026-10-20 当前更新：微信原生 XLSX 预览与确认导入、分类记忆流程修复、游戏界面撤下并保留储蓄目标。当前 168 项自动测试及五组浏览器流程通过；两次合成数据真实模型记忆检查通过。详见 [当前说明](WECHAT_IMPORT_AND_MEMORY.md)。下面按日期保留历史证据，不代表旧游戏仍在界面中。
+
+
 Updated 20 October 2026. Run `python scripts/verify.py` to reproduce the 150 domain/HTTP tests and legacy baseline checks. Tests use temporary databases, no external provider calls, and do not change a personal ledger. The latest counts and timestamps are in `output/evidence/verification.json`; individual results are in `test_log.txt`. The original 28-test record is preserved under `output/evidence/baseline-20261009/`.
 
 The suite covers exact fen arithmetic, complete-batch validation, duplicate/concurrent imports, audit-failure rollback, edits, calendar windows, manual scenarios, budgets and grounded answer sources. New memory checks cover original labels, correction from transfer to expense, future approved reuse, same-school tuition and unrelated-roommate counterexamples, generic payment-label rejection, true own-account transfers, conflicting/review-only memories, stale confirmation, versioning, disabling/deletion without rewriting history, migration/reopen and deduplication after kind correction.

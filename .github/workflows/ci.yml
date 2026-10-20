@@ -39,3 +39,6 @@ jobs:
           node --check static/pages.js
           node --check static/setup-chat.js
           node --check static/trials.js
+          node --check static/goals.js
+          node --check static/memories.js
+          node --check static/imports.js

@@ -77,4 +77,24 @@ class SetupChatTests(unittest.TestCase):
         r=self.talk('purpose','这是伙食费，不要记住',context={'record_id':record['id']},patch={'kind':'expense','category':'Food','purpose':'伙食费','remember':True,'auto_apply':True})
         self.assertFalse(r['draft']['remember']);self.assertFalse(r['draft']['auto_apply'])
 
+    def test_editing_memory_keeps_approved_conditions_and_auto_setting(self):
+        self.ledger.import_csv('date,description,amount,kind,category,counterparty,note\n2026-09-10,校园账户充值,50,expense,Education,学校,九月伙食费\n')
+        record=self.ledger.transactions()[0]
+        saved=self.ledger.memory.confirm(record['id'],{'kind':'expense','category':'Food','purpose':'伙食费','remember':True,'auto_apply':True,'match':{'counterparty':'学校','note':'伙食费'}})
+        r=self.talk('purpose','名称改成校园伙食费',context={'record_id':record['id'],'memory_id':saved['memory_id']})
+        self.assertTrue(r['draft']['auto_apply'])
+        self.assertEqual(r['draft']['match'],{'counterparty':'学校','note':'伙食费'})
+        self.confirm(r)
+        self.assertTrue(self.ledger.memory.list()[0]['auto_apply'])
+
+    def test_explicit_memory_policy_is_previewed_and_applies_to_followup(self):
+        self.ledger.import_csv('date,description,amount,kind,category,counterparty,note\n2026-09-10,校园账户充值,50,expense,Education,学校,伙食费\n')
+        record=self.ledger.transactions()[0]
+        r=self.talk('purpose','这是伙食费',context={'record_id':record['id']})
+        r=self.coach.chat({'mode':'purpose','message':'以后相同条件自动分类','memory_policy':'auto','use_model':False,'conversation_id':r['conversation_id'],'revision':r['revision']})
+        self.assertTrue(r['draft']['auto_apply']);self.assertEqual(self.ledger.memory.list(),[])
+        self.confirm(r)
+        self.ledger.import_csv('date,description,amount,kind,category,counterparty,note\n2026-10-10,校园账户充值,60,expense,Education,学校,伙食费\n')
+        self.assertEqual(self.ledger.transactions()[0]['review_status'],'auto')
+
 if __name__=='__main__':unittest.main()

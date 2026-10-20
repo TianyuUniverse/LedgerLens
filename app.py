@@ -71,6 +71,10 @@ def create_server(db_path, port=8765):
                 file, content_type = files[path]
                 return self.reply(200, (ROOT/file).read_bytes(), content_type)
             extra={'/reports.js':('static/reports.js','text/javascript; charset=utf-8'),
+                   '/goals.js':('static/goals.js','text/javascript; charset=utf-8'),
+                   '/memories.js':('static/memories.js','text/javascript; charset=utf-8'),
+                   '/workspace.css':('static/workspace.css','text/css; charset=utf-8'),
+                   '/imports.js':('static/imports.js','text/javascript; charset=utf-8'),
                    '/pages.js':('static/pages.js','text/javascript; charset=utf-8'),
                    '/comfort.css':('static/comfort.css','text/css; charset=utf-8'),
                    '/setup-chat.js':('static/setup-chat.js','text/javascript; charset=utf-8'),
@@ -94,7 +98,8 @@ def create_server(db_path, port=8765):
                 return self.reply(415, {'error':'Use application/json.'})
             try:
                 length = int(self.headers.get('Content-Length','0'))
-                if not 0 < length <= 2200000:
+                max_length=7000000 if urlsplit(self.path).path in ('/api/import-file/preview','/api/import-file/confirm') else 2200000
+                if not 0 < length <= max_length:
                     return self.reply(413, {'error':'Request must be 1 byte to 2.2 MB.'})
                 raw = json.loads(self.rfile.read(length).decode('utf-8'))
                 if not isinstance(raw, dict):
@@ -108,6 +113,10 @@ def create_server(db_path, port=8765):
                     return self.reply(404, {'error':'Route not found.'})
                 elif path == '/api/import':
                     result = ledger.import_csv(raw.get('csv'))
+                elif path == '/api/import-file/preview':
+                    result = ledger.wechat_import.preview(raw)
+                elif path == '/api/import-file/confirm':
+                    result = ledger.wechat_import.commit(raw)
                 elif path == '/api/demo':
                     result = ledger.import_csv((ROOT/'samples/transactions.csv').read_text(encoding='utf-8'))
                 elif path == '/api/memory-demo':
