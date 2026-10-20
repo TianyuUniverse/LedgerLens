@@ -17,7 +17,7 @@ for file in files:
         raise RuntimeError('Private configuration selected for packaging.')
     if credential and credential.encode() in file.read_bytes():
         raise RuntimeError('Private credential found in a shared artifact. Packaging stopped.')
-manifest={'package':'LedgerLens CSSE2026 AI-assisted charts, reports and adventure update 2026-10-19','files':[{'path':str(file.relative_to(ROOT)).replace('\\','/'),'size':file.stat().st_size,'sha256':hashlib.sha256(file.read_bytes()).hexdigest()} for file in sorted(files)],'excluded':['private user databases','data/provider.json and credentials','.git','node_modules','temporary build files']}
+manifest={'package':'LedgerLens CSSE2026 AI-assisted conversational workspace and playable adventure 2026-10-20','files':[{'path':str(file.relative_to(ROOT)).replace('\\','/'),'size':file.stat().st_size,'sha256':hashlib.sha256(file.read_bytes()).hexdigest()} for file in sorted(files)],'excluded':['private user databases','data/provider.json and credentials','.git','node_modules','temporary build files']}
 manifest_path=out/'package_manifest.json';manifest_path.write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8');files.append(manifest_path)
 target=out/'LedgerLens_Final_Project.zip'
 with zipfile.ZipFile(target,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as z:

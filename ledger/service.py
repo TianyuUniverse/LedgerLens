@@ -20,6 +20,8 @@ from .localization import CSV_HEADERS, CATEGORY_LABELS, label
 from .adventure import Adventure
 from .reports import Reports
 from .entry import QuickEntry
+from .setup_chat import SetupChat
+from .trials import Trials
 
 class Ledger:
     def __init__(self, path, clock=None):
@@ -63,6 +65,8 @@ class Ledger:
         self.adventure = Adventure(self,clock)
         self.reports = Reports(self)
         self.quick_entry = QuickEntry(self)
+        self.setup_chat = SetupChat(self)
+        self.trials = Trials(self)
 
     @contextmanager
     def connection(self):

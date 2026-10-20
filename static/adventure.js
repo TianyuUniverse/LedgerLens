@@ -53,17 +53,20 @@ function renderAdventure(){
   $('adventure-rewards').innerHTML=game.recent_rewards.length?game.recent_rewards.map(reward=>`<p><strong>＋${reward.xp} 经验</strong> · ${esc(reward.title)}<small>${esc(reward.day)}</small></p>`).join(''):'<p class="muted">完成小任务，点亮第一份成长记录。</p>';
 }
 
-function openAdventureGoal(){
+function openAdventureGoal(){openSetupChat('goal');}
+function openManualAdventureGoal(){
   $('adventure-goal-form').reset();$('adventure-goal-deadline').min=state.adventure.today;$('adventure-goal-deadline').value=state.adventure.suggested_deadline;
   $('adventure-goal-error').textContent='';adventureDrafts.goal=null;$('adventure-goal-dialog').showModal();
 }
-function openAdventureEntry(id){
+function openAdventureEntry(id){openSetupChat('allocation',{goal_id:id});}
+function openManualAdventureEntry(id){
   const goal=state.adventure.goals.find(g=>g.id===id);if(!goal||goal.archived)return;
   adventureEntryGoal=id;$('adventure-entry-form').reset();$('adventure-entry-title').textContent=goal.title;
   $('adventure-entry-balance').textContent='目前已为此目标记录 '+cash(goal.balance_fen)+'，目标 '+cash(goal.target_fen)+'。';
   $('adventure-entry-error').textContent='';adventureDrafts.entry=null;$('adventure-entry-dialog').showModal();
 }
-function openAdventureReflection(month){
+function openAdventureReflection(month){openSetupChat('reflection',{month:month||$('review-month').value||undefined});}
+function openManualAdventureReflection(month){
   $('adventure-reflect-month').value=month||$('review-month').value||state.overview.months.at(-1)?.month||'';
   $('adventure-reflect-note').value=state.adventure.reflection?.note||'';$('adventure-reflect-error').textContent='';$('adventure-reflect-dialog').showModal();
 }
@@ -98,7 +101,7 @@ $('adventure').addEventListener('click',event=>run(async()=>{
   if(button.dataset.adventureArchive){adventureArchiveGoal=Number(button.dataset.adventureArchive);$('adventure-archive-copy').textContent='归档“'+state.adventure.goals.find(g=>g.id===adventureArchiveGoal).title+'”后，它会从进行中的目标移走。';$('adventure-archive-dialog').showModal();}
   if(button.dataset.adventureRestore){await api('/api/adventure/archive',{goal_id:Number(button.dataset.adventureRestore),archived:false});focusedAdventureGoal=Number(button.dataset.adventureRestore);await refresh();}
   if(button.dataset.adventureQuest==='import'){$('csv-file').click();}
-  if(button.dataset.adventureQuest==='review'){const record=state.transactions.find(r=>r.review_status==='needs_review');if(record)openPurpose(record);else{notice('没有待确认账单时无需重复审核；导入新的模糊账单后再完成此任务。');$('records').scrollIntoView({behavior:'smooth'});}}
+  if(button.dataset.adventureQuest==='review'){const record=state.transactions.find(r=>r.review_status==='needs_review');if(record)openPurpose(record);else{notice('没有待确认账单时无需重复审核；导入新的模糊账单后再完成此任务。');navigatePage('records');$('records').scrollIntoView({behavior:'smooth'});}}
   if(button.dataset.adventureQuest==='reflect')openAdventureReflection();
 }));
 $('adventure-confirm-archive').addEventListener('click',()=>run(async()=>{await api('/api/adventure/archive',{goal_id:adventureArchiveGoal,archived:true});$('adventure-archive-dialog').close();await refresh();notice('目标已收好，历史记录和经验都已保留。');}));

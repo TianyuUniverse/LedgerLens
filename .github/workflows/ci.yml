@@ -36,3 +36,6 @@ jobs:
           node --check static/adventure.js
           node --check static/reports.js
           node --check static/quick-entry.js
+          node --check static/pages.js
+          node --check static/setup-chat.js
+          node --check static/trials.js

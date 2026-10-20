@@ -24,7 +24,8 @@ function memoryFields(){
   $('memory-enabled-label').hidden=!editing;
   $('remember-purpose').disabled=editing;
 }
-function openPurpose(record,memory=null){
+function openPurpose(record,memory=null){openSetupChat('purpose',{record_id:record.id,...(memory?{memory_id:memory.id}:{})});}
+function openManualPurpose(record,memory=null){
   purposeContext=memory?{type:'memory',memory}:{type:'record',record};
   $('purpose-title').textContent=memory?'修改分类记忆':'这笔钱实际用来做什么？';
   $('purpose-record').textContent=`账单 #${record.id} · ${record.date} · ${cash(record.amount_fen)} · ${l(record.description)} · ${record.counterparty} · ${record.note}。原始标签：${l(record.source_kind)} / ${l(record.source_category)}`;
@@ -94,7 +95,7 @@ async function askConversation(){
     turn.innerHTML=`<p class="user-question">${esc(question)}</p><p class="answer-text">${esc(result.answer)}</p><p class="note">${esc(result.source)}${result.notice?' · '+esc(result.notice):''}</p>${result.assumption?'<p class="note">'+esc(result.assumption)+'</p>':''}`;
     if(result.record_ids.length){const traceButton=document.createElement('button');traceButton.className='secondary small';traceButton.textContent='查看 '+result.record_ids.length+' 笔来源账单';traceButton.addEventListener('click',()=>showTrace(result.record_ids,'本次回答的来源账单'));turn.append(traceButton);}
     for(const choice of result.choices||[]){const choiceButton=document.createElement('button');choiceButton.className='secondary small choice-button';choiceButton.textContent=`#${choice.id} · ${l(choice.description)} · ${cash(choice.amount_fen)}`;choiceButton.addEventListener('click',()=>{$('question').value='#'+choice.id;run(askConversation);});turn.append(choiceButton);}
-    if(result.data?.tool==='generate_savings_plans'){const previewButton=document.createElement('button');previewButton.className='secondary small choice-button';previewButton.textContent='查看预算并选择方案';previewButton.addEventListener('click',()=>{planCards(result.data);$('smart-plans').scrollIntoView({behavior:'smooth'});});turn.append(previewButton);}
+    if(result.data?.tool==='generate_savings_plans'){const previewButton=document.createElement('button');previewButton.className='secondary small choice-button';previewButton.textContent='查看预算并选择方案';previewButton.addEventListener('click',()=>{planCards(result.data);navigatePage('smart-plans');$('smart-plans').scrollIntoView({behavior:'smooth'});});turn.append(previewButton);}
     $('answer').replaceChildren(turn);while($('chat-history').children.length>5)$('chat-history').firstElementChild.remove();
   }finally{asking=false;button.disabled=false;button.textContent='发送';}
 }

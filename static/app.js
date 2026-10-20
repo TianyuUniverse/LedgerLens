@@ -13,7 +13,7 @@ function errorMessage(error){return error instanceof TypeError?'无法连接本�
 async function run(task){try{return await task();}catch(error){notice(errorMessage(error),true);return null;}}
 async function refresh(){const response=await fetch('/api/state',{headers:{'Accept-Language':'zh-CN'}});if(!response.ok)throw Error('无法读取账本，请重试。');state=await response.json();render();}
 function options(categories,selected){return categories.map(c=>`<option value="${esc(c)}" ${c===selected?'selected':''}>${esc(l(c))}</option>`).join('');}
-function showTrace(ids,label){trace=new Set(ids);$('filter').value='all';$('trace-label').textContent=label;renderRows();$('records').scrollIntoView({behavior:'smooth'});}
+function showTrace(ids,label){trace=new Set(ids);$('filter').value='all';$('trace-label').textContent=label;renderRows();navigatePage('records');$('records').scrollIntoView({behavior:'smooth'});}
 function renderRows(){
   const category=$('filter').value;
   const rows=state.transactions.filter(r=>(category==='all'||r.category===category)&&(!trace||trace.has(r.id)));

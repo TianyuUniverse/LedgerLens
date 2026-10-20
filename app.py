@@ -71,6 +71,10 @@ def create_server(db_path, port=8765):
                 file, content_type = files[path]
                 return self.reply(200, (ROOT/file).read_bytes(), content_type)
             extra={'/reports.js':('static/reports.js','text/javascript; charset=utf-8'),
+                   '/pages.js':('static/pages.js','text/javascript; charset=utf-8'),
+                   '/comfort.css':('static/comfort.css','text/css; charset=utf-8'),
+                   '/setup-chat.js':('static/setup-chat.js','text/javascript; charset=utf-8'),
+                   '/trials.js':('static/trials.js','text/javascript; charset=utf-8'),
                    '/minimal.css':('static/minimal.css','text/css; charset=utf-8'),
                    '/quick-entry.js':('static/quick-entry.js','text/javascript; charset=utf-8'),
                    '/images/comic-flat.png':('static/images/comic-flat.png','image/png')}
@@ -127,6 +131,14 @@ def create_server(db_path, port=8765):
                     result=ledger.quick_entry.draft(raw)
                 elif path == '/api/entries/save':
                     result=ledger.quick_entry.save(raw)
+                elif path == '/api/setup/chat':
+                    result=ledger.setup_chat.chat(raw)
+                elif path == '/api/setup/confirm':
+                    result=ledger.setup_chat.commit(raw)
+                elif path == '/api/adventure/trial/start':
+                    result=ledger.trials.start(raw)
+                elif path == '/api/adventure/trial/answer':
+                    result=ledger.trials.answer(raw)
                 elif path == '/api/adventure/goals':
                     result=ledger.adventure.create_goal(raw)
                 elif path == '/api/adventure/entries':

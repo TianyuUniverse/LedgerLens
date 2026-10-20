@@ -86,8 +86,8 @@ $('report-current').addEventListener('click',()=>{$('report-anchor').value=$('re
 $('report-ai-generate').addEventListener('click',()=>loadPeriodReport(true));
 function performReportAction(action){
   if(action==='goal')openAdventureGoal();if(action==='reflect')openAdventureReflection(periodReport.start.slice(0,7));
-  if(action==='review'){$('review-pending').click();$('memories').scrollIntoView({behavior:'smooth'});}
-  if(action==='import')$('csv-file').click();if(action==='budget')$('budget-form').scrollIntoView({behavior:'smooth'});if(action==='plan')$('smart-plans').scrollIntoView({behavior:'smooth'});
+  if(action==='review'){navigatePage('memories');$('review-pending').click();$('memories').scrollIntoView({behavior:'smooth'});}
+  if(action==='import')$('csv-file').click();if(action==='budget'){navigatePage('overview');$('budget-form').scrollIntoView({behavior:'smooth'});}if(action==='plan'){navigatePage('smart-plans');$('smart-plans').scrollIntoView({behavior:'smooth'});}
 }
 $('adventure-ai-coach').addEventListener('click',event=>{const action=event.target.closest('[data-report-action]')?.dataset.reportAction;if(action)performReportAction(action);});
 $('insights').addEventListener('click',event=>{

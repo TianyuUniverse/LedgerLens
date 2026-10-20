@@ -4,6 +4,16 @@ A runnable CSSE2026 project with a browser, standard-library Python backend and 
 
 The software interface defaults to Simplified Chinese, including categories, validation, provenance, conversations, templates and exports. Original user text and internal identifiers remain intact. Chinese and English CSV headers/kinds/categories are accepted.
 
+## 现在从对话开始
+
+打开后通过侧栏或手机导航进入 **首页、账单、图表、冒险、记忆、储蓄、AI 助手**，每个视图独立显示。
+
+所有业务录入默认使用小狐管家的 **对话 → 草稿 → 确认**：记一笔、设立目标、预算、储蓄方案、存入或取回、复盘、分类用途与记忆。直接说“我想攒钱旅行”，AI 会问必要细节；不必先填完表格。原表单可从“手动填写”打开。
+
+冒险页新增可玩的 **小狐线索小岛**：点选或按数字键找用途线索，答对后点击前进或按方向键移动角色。AI 编写探险引子，程序核验答案和每日奖励。见 [本轮设计与验证](docs/UPDATE_2026-10-20.md)。
+
+![对话式目标草稿](docs/images/conversational-goal.png)
+
 ## Run
 
 Requires Python 3.11+ and a modern browser. The application needs no third-party packages.
@@ -37,7 +47,7 @@ Open http://127.0.0.1:8765, or double-click `Start_LedgerLens.bat`. Click **加�
 
 ## Goal adventure / 目标冒险
 
-Click **开启新目标** to name a personal wish, set an amount, an optional date and its starting savings. Use **记录储蓄进展** for money you confirm has been set aside, or record a withdrawal when plans change. The camp develops at 25%, 50%, 75% and 100%. Progress survives reloads and archiving; up to three goals can be active.
+Click **和 AI 聊聊目标** to describe a wish. The assistant asks for necessary details and shows a draft before confirmation; the original amount/date form is available as an optional manual fallback. Use **记录储蓄进展** for money you confirm has been set aside, or record a withdrawal when plans change. The camp develops at 25%, 50%, 75% and 100%. Progress survives reloads and archiving; up to three goals can be active.
 
 These are self-reported earmarked savings, not verified bank balances or forecasted income. They do not create or change ledger transactions. Starting savings set the journey position without milestone XP. Subsequent entries use exact fen arithmetic and operation IDs to make retries idempotent.
 
@@ -89,7 +99,7 @@ The tool allowlist is `query_transactions`, `compare_periods`, `generate_savings
 python scripts/verify.py
 ```
 
-This runs **129 domain/HTTP tests** on temporary databases without external model calls or changes to your ledger. The record is `output/evidence/verification.json`; the original 28-test evidence is preserved under `output/evidence/baseline-20261009/`. The legacy rules benchmark remains 18/20 on an authored, rules-informed synthetic convenience sample; baseline grounded Q&A remains 9/9. These figures are not representative accuracy.
+This runs **150 domain/HTTP tests** on temporary databases without external model calls or changes to your ledger. The record is `output/evidence/verification.json`; the original 28-test evidence is preserved under `output/evidence/baseline-20261009/`. The legacy rules benchmark remains 18/20 on an authored, rules-informed synthetic convenience sample; baseline grounded Q&A remains 9/9. These figures are not representative accuracy.
 
 Optional Edge/Playwright browser replays:
 
@@ -97,6 +107,8 @@ Optional Edge/Playwright browser replays:
 node scripts/browser_check.cjs
 node scripts/workflow_browser_check.cjs
 node scripts/adventure_browser_check.cjs
+node scripts/reports_browser_check.cjs
+node scripts/setup_browser_check.cjs
 ```
 
 These use temporary databases, disable external calls, and check original, AI workflow and goal-adventure interactions plus 390px mobile overflow. Install Playwright and Microsoft Edge first; set `FINANCE_PYTHON` if an explicit Python executable is needed. The original browser script's `--record` option records the baseline demo.
@@ -111,6 +123,9 @@ This explicitly consumes provider API usage on a temporary synthetic ledger. The
 
 | Path | Responsibility |
 | --- | --- |
+| `ledger/setup_chat.py`, `static/setup-chat.js` | Revisioned conversation drafts and explicit confirmation for seven input flows |
+| `ledger/trials.py`, `static/trials.js` | Playable daily synthetic cases, AI story introductions and server-checked rewards |
+| `static/pages.js`, `static/comfort.css` | Seven views, readable typography and restrained interaction |
 | `app.py` | Loopback HTTP, session token, same-origin boundary and routes |
 | `ledger/service.py` | Schema migration, imports, edits, overview, budgets, manual scenarios and audit |
 | `ledger/domain.py`, `ledger/memory.py` | Exact-money validation and approved purpose memory |

@@ -3,7 +3,8 @@ const uiIcons={book:'<path d="M5 4h13a2 2 0 0 1 2 2v15H7a3 3 0 0 1-3-3V7a3 3 0 0
 const uiIcon=name=>`<svg viewBox="0 0 24 24" aria-hidden="true">${uiIcons[name]}</svg>`;
 const entryPaths={Food:'<path d="M6 3v7m-3-7v4q0 3 3 3t3-3V3M6 10v11M17 3q-5 5-3 10h4M18 3v18"/>',Shopping:'<path d="M5 7h14l1 14H4L5 7zM8 8V6a4 4 0 0 1 8 0v2"/>',Housing:'<path d="m2 11 10-8 10 8M5 10v11h14V10M9 21v-7h6v7"/>',Transport:'<rect x="5" y="3" width="14" height="17" rx="3"/><path d="M5 12h14M8 20v2m8-2v2M8 7h8M8 16h1m6 0h1"/>',Entertainment:'<path d="M9 18V5l10-2v13M9 8l10-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="16" cy="16" rx="3" ry="2"/>',Utilities:'<path d="M8 3v5m8-5v5M5 8h14v4a7 7 0 0 1-14 0V8zM12 19v3"/>',Health:'<rect x="3" y="6" width="18" height="15" rx="2"/><path d="M8 6V3h8v3M12 10v7m-4-3h8"/>',Education:'<path d="m2 8 10-5 10 5-10 5L2 8zM6 10v7q6 5 12 0v-7M22 8v9"/>',Other:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',Income:uiIcons.coin,Transfer:'<path d="M3 7h17l-4-4M21 17H4l4 4"/>'};
 const entryIcon=c=>`<svg viewBox="0 0 24 24" aria-hidden="true">${entryPaths[c]||entryPaths.Other}</svg>`;
-function openQuickEntry(){
+function openQuickEntry(){openSetupChat('entry');}
+function openManualQuickEntry(){
   $('quick-entry-form').reset();$('entry-date').value=state.adventure.today;$('entry-date').max=state.adventure.today;
   $('entry-category').innerHTML=options(state.expense_categories,'Food');$('entry-error').textContent='';$('entry-draft-notice').textContent='填写后确认保存，账单会沿用分类记忆和重复检查。';
   $('entry-use-model').disabled=!state.model_enabled;renderEntryCategories();$('quick-entry-dialog').showModal();
