@@ -8,7 +8,7 @@ function renderWorkflows(){
   $('model-disclosure').textContent=state.model_enabled?
     `已配置 ${state.model_name}。勾选后，会向服务商发送问题、最近对话和所查账单结果；未勾选时使用本地规则查询与测算。`:
     '本地规则模式。配置 AI 后可启用模型理解和工具调用。';
-  $('memory-list').innerHTML=state.memories.length?state.memories.map(m=>`<article class="memory-card"><div><span class="eyebrow">记忆 #${m.id} · 第 ${m.version} 版</span><h3>${esc(m.purpose)}</h3><p>${esc(l(m.kind))} / ${esc(l(m.category))} · ${m.enabled?(m.auto_apply?'已批准自动复用':'每次匹配均需审核'):'已停用'}</p><p class="note">${Object.entries(m.match).map(([k,v])=>esc(l(k))+'：'+esc(v)).join('；且 ')}<br>确认依据：账单 #${m.source_id}</p></div><div class="actions"><button class="secondary small" data-memory-edit="${m.id}">修改记忆条件</button><button class="secondary small" data-memory-toggle="${m.id}">${m.enabled?'停用':'启用'}</button><button class="secondary small" data-memory-delete="${m.id}">删除记忆</button></div></article>`).join(''):'<p class="muted">还没有已确认的记忆。请先审核账单，设置允许复用的用途条件。</p>';
+  renderMemoryPage();
   if(!$('review-month').value&&state.overview.months.length)$('review-month').value=state.overview.months.at(-1).month;
   const saved=state.generated_plan;
   $('saved-smart-plan').textContent=saved?`已保存：${l(saved.style)}。目标 ${cash(Number(saved.inputs.target)*100)}，期限 ${saved.inputs.months} 个月。账单或限制变化后，请重新生成并审核。`:'尚未保存生成的储蓄方案。';
@@ -51,12 +51,13 @@ $('purpose-form').addEventListener('submit',async e=>{
     const data={kind:$('purpose-kind').value,category:$('purpose-category').value,purpose:$('purpose-text').value,match,auto_apply:$('auto-memory').checked};
     if(purposeContext.type==='memory')await api('/api/memories/'+purposeContext.memory.id,{...data,enabled:$('memory-enabled').checked},'PATCH');
     else await api('/api/confirm-purpose',{...data,id:purposeContext.record.id,remember:$('remember-purpose').checked,expected_revision:purposeContext.record.revision});
-    $('purpose-dialog').close();await refresh();notice('消费用途已确认并保存。记忆修改用于后续导入，历史账单保留当时的分类。');
+    $('purpose-dialog').close();await refresh();navigatePage('memories');selectMemoryTab(purposeContext.type==='memory'||$('remember-purpose').checked?'saved':'pending');notice('消费用途已确认并保存。记忆修改用于后续导入，历史账单保留当时的分类。');
   }catch(error){$('purpose-error').textContent=errorMessage(error);}finally{button.disabled=false;}
 });
 $('review-pending').addEventListener('click',()=>reviewPending());
 for(const [id,phase] of [['memory-seed','seed'],['memory-followup','followup']])$(id).addEventListener('click',()=>run(async()=>{
   const result=await api('/api/memory-demo',{phase});await refresh();
+  if(phase==='seed')selectMemoryTab('pending');
   notice(`第${phase==='seed'?'一':'二'}步示例：新增 ${result.inserted} 笔，跳过 ${result.duplicates} 笔重复记录；记忆自动识别 ${result.auto_labeled} 笔，待确认 ${result.needs_review} 笔。`);
   if(phase==='seed'&&result.needs_review)reviewPending(result.ids);
 }));
@@ -64,7 +65,7 @@ $('memory-list').addEventListener('click',e=>run(async()=>{
   const edit=e.target.closest('[data-memory-edit]'),toggle=e.target.closest('[data-memory-toggle]'),del=e.target.closest('[data-memory-delete]');
   if(edit){const m=state.memories.find(m=>m.id===Number(edit.dataset.memoryEdit));openPurpose(m.example,m);}
   if(toggle){const m=state.memories.find(m=>m.id===Number(toggle.dataset.memoryToggle));await api('/api/memories/'+m.id,{enabled:!m.enabled},'PATCH');await refresh();notice('记忆设置已更新，历史账单保持不变。');}
-  if(del){await api('/api/delete-memory',{id:Number(del.dataset.memoryDelete)});await refresh();notice('记忆已删除，历史分类与操作记录保持不变。');}
+  if(del){memoryDeleteId=Number(del.dataset.memoryDelete);const m=state.memories.find(m=>m.id===memoryDeleteId);$('memory-delete-name').textContent=m.purpose;$('memory-delete-dialog').showModal();}
 }));
 
 function planCards(preview){
@@ -81,7 +82,7 @@ $('review-form').addEventListener('submit',e=>{e.preventDefault();run(async()=>{
   const result=await api('/api/monthly-review',{month:$('review-month').value});
   $('review-result').innerHTML=`<p class="answer-text">${esc(result.comparison.second_month+' 与 '+result.comparison.first_month)}：支出变化 ${cash(result.comparison.delta_fen)}</p><p>20 元及以下的小额消费：${result.small_payments.count} 笔，共 ${cash(result.small_payments.total_fen)}</p>${result.recurring.map(group=>`<p>${esc(l(group.description))} · ${esc(group.months.join(', '))}<br><small>${esc(group.notice)}</small></p>`).join('')}<p class="note">${esc(result.notice)} ${esc(result.comparison.assumption)}</p><button id="review-source" class="secondary small">查看复盘依据</button>`;
   $('review-source').addEventListener('click',()=>showTrace(result.record_ids,'消费复盘的来源账单'));
-  if(typeof openAdventureReflection==='function'){const reflectButton=document.createElement('button');reflectButton.className='secondary small choice-button';reflectButton.textContent='记录复盘心得，获得经验';reflectButton.addEventListener('click',()=>openAdventureReflection(result.month));$('review-result').append(reflectButton);}
+  if(typeof openAdventureReflection==='function'){const reflectButton=document.createElement('button');reflectButton.className='secondary small choice-button';reflectButton.textContent='记录复盘心得';reflectButton.addEventListener('click',()=>openAdventureReflection(result.month));$('review-result').append(reflectButton);}
 });});
 
 async function askConversation(){

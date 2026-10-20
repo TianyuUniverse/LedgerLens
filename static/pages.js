@@ -2,13 +2,13 @@
 const pageDefinitions={
   overview:{name:'首页',title:'记好每一笔，靠近小目标。',description:'先看清收支，再安排今天的一小步。',icon:'coin'},
   records:{name:'账单明细',title:'每一笔，都清清楚楚。',description:'导入、审核和查找账单，保留每个数字的来源。',icon:'book'},
-  insights:{name:'成长图鉴',title:'读懂自己的财务节奏。',description:'周月图表、六维习惯、AI 建议与四格日记。',icon:'chart'},
-  adventure:{name:'目标冒险',title:'让每个小愿望，慢慢实现。',description:'和 AI 聊聊目标，再把行动积累成看得见的进步。',icon:'star'},
+  insights:{name:'统计分析',title:'读懂自己的财务节奏。',description:'周月图表、六维习惯、AI 建议与四格日记。',icon:'chart'},
+  goals:{name:'储蓄目标',title:'让每个小愿望，慢慢实现。',description:'和 AI 聊聊目标，再把行动积累成看得见的进步。',icon:'star'},
   memories:{name:'分类记忆',title:'确认一次，记住实际用途。',description:'查看和管理你确认过的分类经验。',icon:'book'},
   'smart-plans':{name:'储蓄计划',title:'找到适合自己的储蓄路线。',description:'告诉 AI 你的想法和限制，一起完善可执行的方案。',icon:'coin'},
   assistant:{name:'AI 助手',title:'想了解账本，直接问就好。',description:'多轮查账、消费比较和储蓄分析，都有依据可查。',icon:'chat'}
 };
-const pageAliases={plan:'smart-plans','monthly-review':'insights'};
+const pageAliases={adventure:'goals',plan:'smart-plans','monthly-review':'insights'};
 let activePage=null;
 function resolvePage(value){return pageAliases[value]|| (Object.hasOwn(pageDefinitions,value)?value:'overview');}
 function activatePage(value,focus=true){

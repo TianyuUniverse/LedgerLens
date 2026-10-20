@@ -83,7 +83,7 @@ def validate_record(raw):
     if category not in CATEGORIES or (kind == 'expense' and category not in EXPENSE_CATEGORIES) or (kind != 'expense' and category != kind.title()):
         raise DomainError('Category must agree with record kind.')
     context = {}
-    for key in ('counterparty', 'note', 'source_kind', 'source_category'):
+    for key in ('counterparty', 'note', 'source_kind', 'source_category','source_platform','external_id','source_status','occurred_at'):
         value = raw.get(key, '')
         if not isinstance(value, str) or len(value) > 300:
             raise DomainError(key + ' must be text with at most 300 characters.')
@@ -91,6 +91,9 @@ def validate_record(raw):
     identity = [day, description.casefold(), amount_fen, kind]
     if context['counterparty'] or context['note']:
         identity.extend([context['counterparty'].casefold(), context['note'].casefold()])
+    if context['external_id']:
+        if context['source_platform']!='wechat' or len(context['external_id'])>100:raise DomainError('外部交易标识无效。')
+        identity=['external',context['source_platform'],context['external_id']]
     fingerprint = hashlib.sha256(json.dumps(identity, ensure_ascii=False).encode()).hexdigest()
     context['source_kind'] = context['source_kind'] or raw.get('kind') or kind
     context['source_category'] = context['source_category'] or raw.get('category') or category

@@ -1,5 +1,8 @@
 # Submission checklist
 
+> 2026-10-20 当前更新：微信原生 XLSX 预览与确认导入、分类记忆流程修复、游戏界面撤下并保留储蓄目标。当前 168 项自动测试及五组浏览器流程通过；两次合成数据真实模型记忆检查通过。详见 [当前说明](WECHAT_IMPORT_AND_MEMORY.md)。下面按日期保留历史证据，不代表旧游戏仍在界面中。
+
+
 The supplied Project Kickoff specifies a runnable system, code repository and README, final slides as PDF, a system demonstration of at least two minutes, and an English technical report. Lecture 01 additionally names proposal slides, test evidence, AI evaluation and disclosed external/AI assistance. No precise final submission deadline appears in the supplied files.
 
 | Requirement | Local artifact / evidence | Status |
@@ -7,7 +10,7 @@ The supplied Project Kickoff specifies a runnable system, code repository and RE
 | Usable interface, backend, connected data | `static/`, `app.py`, `ledger/service.py`, SQLite | Implemented and verified locally |
 | Main workflow | Import, inspect, correct, plan, query, monitor | Browser-tested |
 | Failure handling | `samples/invalid.csv`, rollback and provider-failure tests | Verified |
-| Source repository and README | Current local Git workspace and `README.md` | Present locally. Remote repository URL not supplied |
+| Source repository and README | Current local Git workspace and `README.md` | Public repository: https://github.com/TianyuUniverse/LedgerLens |
 | Final PDF slides | `output/LedgerLens_Final_Slides.pdf` | Included |
 | English technical report | `output/pdf/LedgerLens_Technical_Report.pdf` | Included |
 | At least two-minute demo | `output/LedgerLens_Demo.webm` | Recorded with English captions |
@@ -15,7 +18,7 @@ The supplied Project Kickoff specifies a runnable system, code repository and RE
 | English proposal script | `docs/PROPOSAL_SPEAKING_NOTES_EN.md` and PPT speaker notes | 575 spoken words with simple vocabulary; approximately five minutes; timing guide included; concrete examples appear in English Q&A |
 | Printable English proposal script | `output/pdf/PROPOSAL_SPEAKING_NOTES_EN.pdf` | Five A4 pages; practice guide, unchanged main script and separate English Q&A; text and layout checked |
 | AI workflow implementation | `docs/CODE_UPDATE_2026-10-15.md`, `docs/AI_WORKFLOW_EXTENSION_PLAN.md` | 分类记忆, tool calling, conversations, constrained plans and monthly reviews implemented; independent evaluation pending |
-| Goal adventure | `ledger/adventure.py`, `static/adventure.*`, `docs/GAMEPLAY_DESIGN.md` | Implemented, 24 new tests and complete browser journey; motivation outcomes unmeasured |
+| Ordinary savings goals (game UI retired) | `ledger/adventure.py`, `static/adventure.*`, `docs/GAMEPLAY_DESIGN.md` | Savings records retained; game UI removed at user request; current browser tests cover savings and legacy URLs |
 | Engineering evidence | `output/evidence/` | Recorded tests and baseline evaluation |
 | AI usage statement | `docs/AI_USAGE.md` and report | Included. Student review details pending |
 | Member contributions | `docs/CONTRIBUTIONS.md` | Names and IDs supplied. Proposed roles recorded. Actual contributions still required |

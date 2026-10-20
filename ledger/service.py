@@ -22,6 +22,7 @@ from .reports import Reports
 from .entry import QuickEntry
 from .setup_chat import SetupChat
 from .trials import Trials
+from .wechat_import import WechatImport
 
 class Ledger:
     def __init__(self, path, clock=None):
@@ -49,7 +50,9 @@ class Ledger:
                          'source_kind':"TEXT NOT NULL DEFAULT ''", 'source_category':"TEXT NOT NULL DEFAULT ''",
                          'import_fingerprint':'TEXT', 'memory_id':'INTEGER', 'memory_version':'INTEGER',
                          'review_status':"TEXT NOT NULL DEFAULT 'confirmed'", 'decision_reason':"TEXT NOT NULL DEFAULT ''",
-                         'revision':'INTEGER NOT NULL DEFAULT 1'}
+                         'revision':'INTEGER NOT NULL DEFAULT 1',
+                         'source_platform':"TEXT NOT NULL DEFAULT ''",'external_id':"TEXT NOT NULL DEFAULT ''",
+                         'source_status':"TEXT NOT NULL DEFAULT ''",'occurred_at':"TEXT NOT NULL DEFAULT ''"}
             for name, declaration in additions.items():
                 if name not in columns:
                     con.execute(f'ALTER TABLE transactions ADD COLUMN {name} {declaration}')
@@ -67,6 +70,7 @@ class Ledger:
         self.quick_entry = QuickEntry(self)
         self.setup_chat = SetupChat(self)
         self.trials = Trials(self)
+        self.wechat_import = WechatImport(self)
 
     @contextmanager
     def connection(self):
@@ -124,9 +128,11 @@ class Ledger:
                     revised = validate_record({**record,**decision,'amount':str(Decimal(record['amount_fen'])/100)})
                     values = {**record,**revised,**decision,'import_fingerprint':original_identity,'created_at':datetime.now(timezone.utc).isoformat()}
                     cur = con.execute('''INSERT INTO transactions(date,description,amount_fen,kind,category,fingerprint,category_source,created_at,
-                        counterparty,note,source_kind,source_category,import_fingerprint,memory_id,memory_version,review_status,decision_reason)
+                        counterparty,note,source_kind,source_category,import_fingerprint,memory_id,memory_version,review_status,decision_reason,
+                        source_platform,external_id,source_status,occurred_at)
                         VALUES(:date,:description,:amount_fen,:kind,:category,:fingerprint,:category_source,:created_at,
-                        :counterparty,:note,:source_kind,:source_category,:import_fingerprint,:memory_id,:memory_version,:review_status,:decision_reason)''',values)
+                        :counterparty,:note,:source_kind,:source_category,:import_fingerprint,:memory_id,:memory_version,:review_status,:decision_reason,
+                        :source_platform,:external_id,:source_status,:occurred_at)''',values)
                     inserted.append(cur.lastrowid)
                     automatic += decision['review_status']=='auto'
                     pending += decision['review_status']=='needs_review'

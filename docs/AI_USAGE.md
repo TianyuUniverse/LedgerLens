@@ -1,5 +1,8 @@
 # AI assistance disclosure and review record
 
+> 2026-10-20 当前更新：微信原生 XLSX 预览与确认导入、分类记忆流程修复、游戏界面撤下并保留储蓄目标。当前 168 项自动测试及五组浏览器流程通过；两次合成数据真实模型记忆检查通过。详见 [当前说明](WECHAT_IMPORT_AND_MEMORY.md)。下面按日期保留历史证据，不代表旧游戏仍在界面中。
+
+
 Tool: OpenAI Codex in the Codex desktop application. Dates: 9–15 October 2026.
 
 The user requested help completing a CSSE2026 Final Project, chose the AI Personal Finance Assistant option, and authorized a new implementation. Codex inspected the supplied course PDFs, wrote the initial requirements, backend, frontend, tests, evaluation scripts and English delivery materials, and ran the local verification. Actual Budget and Firefly III were consulted as related work. No source code from either repository was incorporated.

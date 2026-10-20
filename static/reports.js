@@ -50,7 +50,7 @@ function renderCoaching(){
   $('report-insights').innerHTML=c.insights.map(i=>`<article><span class="insight-dot"></span><div><p>${esc(i.text)}</p>${factButton(i.fact_id)}</div></article>`).join('');
   $('report-tasks').innerHTML=c.tasks.map((t,i)=>`<article class="coach-task"><span class="task-order">${i+1}</span><div><strong>${esc(t.title)}</strong><p>${esc(t.reason)}</p>${t.fact_ids.map(factButton).join('')}</div><button class="secondary small" data-report-action="${esc(t.action)}">去看看 →</button></article>`).join('');
   $('report-comic').innerHTML=c.comic.map((panel,i)=>`<article class="comic-panel"><div class="comic-art comic-art-${i}" role="img" aria-label="小狐${['发现账单','整理用途','计划下一步','鼓励自己'][i]}"></div><span class="comic-number">0${i+1}</span><div class="comic-dialogue">${esc(panel.line)}</div><div class="comic-source">${factButton(panel.fact_id)}</div></article>`).join('');
-  const task=c.tasks[0];$('adventure-ai-coach').innerHTML=`<div class="game-coach-heading"><span>✦</span><strong>小狐向导</strong><small>${r.generation.mode==='ai'?'AI 行动建议':'本地行动建议'}</small></div><p>${esc(task.reason)}</p><div><button class="secondary small" data-report-action="${esc(task.action)}">${esc(task.title)} →</button><a href="#insights">查看本期图鉴 ↗</a></div>`;
+
   $('comic-attribution').textContent=r.generation.mode==='ai'?'本期分镜与对白由 AI 根据统计事实生成；插画为项目预制卡通素材。':'当前展示本地四格故事模板；启用 AI 后生成本期分镜与对白。';
 }
 function renderPeriodReport(report){
@@ -89,9 +89,9 @@ function performReportAction(action){
   if(action==='review'){navigatePage('memories');$('review-pending').click();$('memories').scrollIntoView({behavior:'smooth'});}
   if(action==='import')$('csv-file').click();if(action==='budget'){navigatePage('overview');$('budget-form').scrollIntoView({behavior:'smooth'});}if(action==='plan'){navigatePage('smart-plans');$('smart-plans').scrollIntoView({behavior:'smooth'});}
 }
-$('adventure-ai-coach').addEventListener('click',event=>{const action=event.target.closest('[data-report-action]')?.dataset.reportAction;if(action)performReportAction(action);});
+
 $('insights').addEventListener('click',event=>{
-  const traceButton=event.target.closest('[data-report-trace]');if(traceButton)showTrace(traceButton.dataset.reportTrace.split(',').map(Number),'成长图鉴的来源账单');
+  const traceButton=event.target.closest('[data-report-trace]');if(traceButton)showTrace(traceButton.dataset.reportTrace.split(',').map(Number),'统计分析的来源账单');
   const action=event.target.closest('[data-report-action]')?.dataset.reportAction;
   if(action)performReportAction(action);
   const download=event.target.closest('[data-download-chart]');if(download){const svg=$(download.dataset.downloadChart).querySelector('svg');if(!svg)return;const blob=new Blob([svg.outerHTML],{type:'image/svg+xml;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='LedgerLens-'+download.dataset.downloadChart+'-'+periodReport.start+'.svg';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}

@@ -17,7 +17,7 @@ async function main(){
     await page.goto(base+'#insights');await page.locator('#report-anchor').fill('2026-09');await page.locator('#report-anchor').dispatchEvent('change');
     await page.locator('#report-records').filter({hasText:'10 笔'}).waitFor();
     await page.locator('#report-trend svg').waitFor();check(await page.locator('#report-donut circle[role=button]').count()>0,'Donut must have evidence slices');
-    await page.locator('#report-donut circle[role=button]').first().focus();await page.keyboard.press('Enter');await page.locator('#trace-label').filter({hasText:'成长图鉴'}).waitFor();
+    await page.locator('#report-donut circle[role=button]').first().focus();await page.keyboard.press('Enter');await page.locator('#trace-label').filter({hasText:'统计分析'}).waitFor();
     await page.locator('#clear-trace').click();
     await page.locator('#header-quick-entry').click();await page.locator('#setup-manual').click();await page.locator('#entry-sentence').fill('昨天食堂午饭25.20元');await page.locator('#entry-parse').click();
     await page.locator('#entry-draft-notice').filter({hasText:'草稿来自本地'}).waitFor();check(await page.locator('#entry-amount').inputValue()==='25.20','Draft amount mismatch');
@@ -27,7 +27,7 @@ async function main(){
     await page.locator('#quick-entry-form button[type=submit]').click();await page.locator('#quick-entry-dialog').waitFor({state:'hidden'});
     await page.goto(base+'#overview');await page.locator('#manual-budget summary').click();await page.locator('#budget-category').selectOption('Food');await page.locator('#budget-amount').fill('300');await page.locator('#budget-form button').click();
     await page.goto(base+'#adventure');await page.locator('#new-adventure-goal').click();await page.locator('#setup-manual').click();await page.locator('#adventure-goal-title').fill('给未来的一点安心');await page.locator('#adventure-goal-target').fill('1000');await page.locator('#adventure-goal-initial').fill('100');await page.locator('#adventure-goal-form button[type=submit]').click();await page.locator('#adventure-goal-dialog').waitFor({state:'hidden'});
-    await page.locator('#adventure-focus [data-adventure-entry]').click();await page.locator('#setup-manual').click();await page.locator('#adventure-entry-amount').fill('200');await page.locator('#adventure-entry-form button[type=submit]').click();await page.locator('#adventure-entry-dialog').waitFor({state:'hidden'});
+    await page.locator('#savings-goals [data-adventure-entry]').click();await page.locator('#setup-manual').click();await page.locator('#adventure-entry-amount').fill('200');await page.locator('#adventure-entry-form button[type=submit]').click();await page.locator('#adventure-entry-dialog').waitFor({state:'hidden'});
     await page.goto(base+'#insights');await page.locator('#report-current').click();await page.locator('#report-total').filter({hasText:'25.20'}).waitFor();
     check(await page.locator('#report-goal-trend svg').count()===1,'Goal chart missing');
     await page.locator('#report-kind').selectOption('week');await page.locator('#report-range').filter({hasText:'至'}).waitFor();
@@ -36,9 +36,8 @@ async function main(){
     await page.waitForFunction(()=>!reportBusy&&periodReport.kind==='month'&&periodReport.record_count===2);
     const image=await page.locator('.comic-art').first().evaluate(async el=>{const style=getComputedStyle(el).backgroundImage;const match=style.match(/^url\(["']?(.*?)["']?\)$/);if(!match)throw Error('Comic background missing: '+style);const i=new Image();i.src=match[1];await i.decode();return i.naturalWidth;});check(image>0,'Comic illustration missing');
     await page.locator('#notice .notice-dismiss').click().catch(()=>{});
-    await page.locator('#adventure-toast').waitFor({state:'hidden'});
     await page.locator('#insights').screenshot({path:path.join(out,'reports-desktop.png')});
-    await page.goto(base+'#adventure');await page.locator('#adventure').screenshot({path:path.join(out,'adventure-minimal.png')});
+    await page.goto(base+'#adventure');await page.locator('#goals').screenshot({path:path.join(out,'savings-goals.png')});
     await page.goto(base+'#overview');await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
     await page.screenshot({path:path.join(out,'minimal-home.png')});
     await page.goto(base+'#insights');const download=page.waitForEvent('download');await page.locator('[data-download-chart=report-trend]').click();check((await download).suggestedFilename().endsWith('.svg'),'Chart export failed');

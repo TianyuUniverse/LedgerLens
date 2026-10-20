@@ -97,7 +97,8 @@ class SetupChat:
             category=classify_rule(message)['category']
             for c,words in CATEGORY_WORDS.items():
                 if any(w in message for w in words):category=c;break
-            patch={'purpose':message,'kind':'expense','category':category}
+            purpose=re.sub(r'^(?:把)?(?:用途|名称|名字)(?:改为|改成|是|叫)\s*','',message).strip()
+            patch={'purpose':purpose,'kind':'expense','category':category}
             if category=='Other' and draft.get('purpose'):
                 patch={k:draft[k] for k in ('purpose','kind','category')}
             if any(word in message for word in ('记住','以后','自动')):patch.update(remember=True,auto_apply=True)
@@ -152,6 +153,9 @@ class SetupChat:
             except DomainError as exc:result.update(ready=False,validation_notice=str(exc))
         if result['ready'] and mode=='reflection' and len(draft.get('note','').strip())<5:result.update(ready=False,validation_notice='可以多说一点具体的发现，至少五个字。')
         if result['ready'] and mode=='reflection' and not any(r['kind']=='expense' and r['date'].startswith(draft['month']) for r in self.ledger.transactions()):result.update(ready=False,validation_notice='这个月还没有导入支出账单。可以先导入，或告诉我想回顾的另一个月份。')
+        if result['ready'] and mode=='purpose':
+            if (draft['kind']=='expense' and draft['category'] not in EXPENSE_CATEGORIES) or (draft['kind']!='expense' and draft['category']!=draft['kind'].title()):
+                result.update(ready=False,validation_notice='收支类型和类别还不一致，请再说明这笔钱的用途。')
         return result
 
     def initial(self,mode,raw):
@@ -168,7 +172,9 @@ class SetupChat:
             if raw.get('memory_id'):
                 memory=next((m for m in self.ledger.memory.list() if m['id']==raw['memory_id']),None)
                 if not memory:raise DomainError('这条记忆不存在。')
+                if memory['source_id']!=record['id']:raise DomainError('请从这条记忆的来源账单开启修改。')
                 context.update(memory_id=memory['id'],memory_version=memory['version'])
+                return {**{k:copy.deepcopy(memory[k]) for k in ('kind','category','purpose','auto_apply','match')},'remember':True},context
             return {'kind':record['kind'],'category':record['category'],'remember':False,'auto_apply':False,'match':{k:record[k] for k in ('counterparty','description','note') if record[k]}},context
         if mode=='reflection':
             latest=max((r['date'][:7] for r in self.ledger.transactions() if r['kind']=='expense'),default=today[:7])
@@ -177,7 +183,9 @@ class SetupChat:
             {'date':today,'kind':'expense','counterparty':'','note':''} if mode=='entry' else {'kind':'deposit','note':''} if mode=='allocation' else {}),context
 
     def chat(self,raw,provider=None):
-        if not isinstance(raw,dict) or set(raw)-{'mode','message','conversation_id','revision','use_model','context'} or raw.get('mode') not in MODES or type(raw.get('use_model',True)) is not bool:raise DomainError('对话设置参数无效。')
+        if not isinstance(raw,dict) or set(raw)-{'mode','message','conversation_id','revision','use_model','context','memory_policy'} or raw.get('mode') not in MODES or type(raw.get('use_model',True)) is not bool:raise DomainError('对话设置参数无效。')
+        policy=raw.get('memory_policy')
+        if policy is not None and (raw['mode']!='purpose' or policy not in ('once','review','auto')):raise DomainError('记忆方式无效。')
         message=raw.get('message')
         if not isinstance(message,str) or not 1<=len(message.strip())<=500:raise DomainError('请用五百字以内描述你的想法。')
         with self.lock:
@@ -217,7 +225,17 @@ class SetupChat:
                         if field in local and local.get(field)!=previous.get(field) and candidate.get(field)!=local[field]:raise ValueError()
                     draft=candidate;reply=data['reply'];source='ai'
                 except (ProviderError,DomainError,ValueError,KeyError,TypeError):notice='AI 暂不可用或草稿未通过校验，已使用本地对话整理。你仍可继续补充和确认。'
+            if mode=='purpose':
+                # Consent is an explicit user decision, never an inferred model setting.
+                if policy is not None:
+                    if policy=='once' and state['context'].get('memory_id'):raise DomainError('已有记忆请改为每次确认，或从记忆列表停用。')
+                    draft.update(remember=policy!='once',auto_apply=policy=='auto')
+                if re.search('不要自动|不自动|不能自动',message):draft['auto_apply']=False
+                if '不要记住' in message:draft.update(remember=False,auto_apply=False)
             preview=self.preview(mode,draft)
+            if mode=='purpose' and preview['ready'] and draft.get('remember'):
+                try:self.ledger.memory.validate({k:draft[k] for k in ('kind','category','purpose','match','auto_apply')},state['context']['record'])
+                except DomainError as exc:preview.update(ready=False,validation_notice=str(exc))
             if not reply and mode in ('entry','allocation','reflection','purpose'):
                 reply={'entry':'告诉我消费用途和金额就好，例如“昨天食堂午饭二十五元”。','allocation':'这次存入还是取回，金额是多少？','reflection':'可以再说一点具体的发现或下次想尝试的做法。','purpose':'告诉我这笔钱的实际用途。想记住相同条件的后续消费，也可以直接说。'}[mode] if not preview['ready'] else '已经整理成下面的草稿。可以继续补充，核对后再确认保存。'
             if not reply:
